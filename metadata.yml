@@ -1,0 +1,15 @@
+name:             "vnet_pattern"
+maintainer:       "TIS Inc."
+maintainer_email: "ccndctr@gmail.com"
+license:          "Apache v2.0"
+description:      "CloudConductor experimental optional pattern for Virtual-Network"
+version:          "0.0.1"
+url:              "https://github.com/cloudconductor-patterns/vnet_pattern"
+
+type:      "optional"
+depends:   []
+conflicts: []
+
+supports:
+  - os: "centos"
+    version: "= 6.5"
