@@ -1,0 +1,25 @@
+AllCops:
+  Exclude:
+    - cookbooks/**/*
+    - vendor/**/*
+
+LineLength:
+  Max: 130
+
+MethodLength:
+  Max: 20
+
+AbcSize:
+  Enabled: false
+
+AsciiComments:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/SingleSpaceBeforeFirstArg:
+  Enabled: false
