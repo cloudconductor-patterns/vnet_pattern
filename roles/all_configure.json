@@ -1,0 +1,10 @@
+{
+  "name" : "all_configure",
+  "description" : "vnet_pattern all-configuration role",
+  "chef_type" : "role",
+  "json_class" :"Chef::Role",
+  "run_list" : [
+    "recipe[vnet_part::vnet_configure]"
+    "recipe[vnet_part::vnet_node]"
+  ]
+}

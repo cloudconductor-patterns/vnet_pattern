@@ -26,6 +26,7 @@ describe 'vnet_part::vnet_configure' do
         pattern: 'pattern_name'
       }
     }
+    chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
 
     chef_run.converge(described_recipe)
   end
@@ -58,6 +59,10 @@ describe 'vnet_part::vnet_configure' do
   describe 'some nodes' do
     before do
       chef_run.node.set['cloudconductor']['servers'] = {
+        edge1: {
+          private_ip: '192.168.0.1',
+          roles: 'vnmgr'
+        },
         node1: {
           private_ip: '192.168.0.11',
           roles: 'web',
