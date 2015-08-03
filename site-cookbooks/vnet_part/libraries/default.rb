@@ -9,6 +9,18 @@
 
 module CloudConductor
   module VnetPartHelper
+    def node_servers
+      servers = all_servers.reject do |_, s|
+        s['roles'].include?('vna') || s['roles'].include?('vnmgr')
+      end
+
+      result = servers.map do |hostname, server_info|
+        server_info['hostname'] = hostname
+        server_info.with_indifferent_access
+      end
+      result
+    end
+
     def find_server_from_name(hostname)
       result = {}
       result = node['cloudconductor']['servers'][hostname].to_hash if node['cloudconductor']['servers'][hostname]

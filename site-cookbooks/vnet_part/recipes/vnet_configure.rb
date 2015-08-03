@@ -7,12 +7,11 @@
 # All rights reserved - Do Not Redistribute
 #
 
-# add vna-id to vna server
-#
-
 extend CloudConductor::CommonHelper
 extend CloudConductor::VnetPartHelper
 
+# add vna-id to vna server
+#
 def configure_vna
   count = 0
 
@@ -29,25 +28,18 @@ end
 
 # add interface-id to nodes
 #
-
 def configure_interfaces
   count = 0
   config = node['vnet_part']['config']
   virtual_addr = IPAddr.new(config['network']['virtual']['addr']).mask(config['network']['virtual']['mask'])
 
-  nodes = all_servers.reject do |_, s|
-    s['roles'].include?('vna') || s['roles'].include?('vnmgr')
-  end
-
-  nodes.each do |hostname, _info|
+  node_servers.each do |info|
     count += 1
-
     virtual_addr = virtual_addr.succ
-
     id = "n#{count}"
 
     cloudconductor_server_interface "tap#{id}" do
-      hostname hostname
+      hostname info['hostname']
       uuid "if-#{id}"
       type 'gretap'
       ipaddr "#{virtual_addr.to_string}/#{config['network']['virtual']['mask']}"
