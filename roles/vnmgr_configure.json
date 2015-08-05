@@ -1,9 +1,9 @@
 {
-  "name" : "vnet_configure",
+  "name" : "vnmgr_configure",
   "description" : "Virtual-Network configure event role",
   "chef_type" : "role",
   "json_class" :"Chef::Role",
   "run_list" : [
-    "recipe[vnet_part::vnet_vnmgr]"
+    "recipe[vnet_part::vnet_mgr]"
   ]
 }

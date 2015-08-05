@@ -15,3 +15,7 @@ attribute :registry,
 
 attribute :database,
           kind_of: Hash
+
+attribute :cookbook,
+          kind_of: String,
+          default: 'openvnet'

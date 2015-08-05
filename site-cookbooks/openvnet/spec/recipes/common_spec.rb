@@ -51,6 +51,7 @@ describe 'openvnet::common' do
   it 'create common.conf file' do
     expect(chef_run).to create_template('/etc/openvnet/common.conf').with(
       source: 'common.conf.erb',
+      cookbook: 'openvnet',
       owner: 'root',
       group: 'root',
       mode: '0644',

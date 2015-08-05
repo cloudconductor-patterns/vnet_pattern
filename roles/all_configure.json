@@ -4,7 +4,7 @@
   "chef_type" : "role",
   "json_class" :"Chef::Role",
   "run_list" : [
-    "recipe[vnet_part::vnet_configure]"
+    "recipe[vnet_part::vnet_configure]",
     "recipe[vnet_part::vnet_node]"
   ]
 }

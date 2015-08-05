@@ -48,6 +48,7 @@ EOS
 
   template '/etc/openvnet/vna.conf' do
     source 'vna.conf.erb'
+    cookbook new_resource.cookbook
     owner 'root'
     group 'root'
     mode 0644
@@ -57,12 +58,11 @@ EOS
               port: new_resource.port)
   end
 
-  if new_resource.service_start
-    service 'vnet-vna' do
-      provider Chef::Provider::Service::Upstart
-      action :start
-    end
-  end
+  service 'vnet-vna' do
+    provider Chef::Provider::Service::Upstart
+    action :start
+  end if new_resource.service_start
+
   new_resource.updated_by_last_action(true)
 end
 

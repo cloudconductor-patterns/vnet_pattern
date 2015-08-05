@@ -45,3 +45,7 @@ attribute :service_start,
           kind_of: [TrueClass, FalseClass],
           equal_to: [true, false],
           default: 'true'
+
+attribute :cookbook,
+          kind_of: String,
+          default: 'openvnet'

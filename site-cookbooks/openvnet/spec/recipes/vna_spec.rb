@@ -68,6 +68,7 @@ EOS
   it 'create vna.conf file' do
     expect(chef_run).to create_template('/etc/openvnet/vna.conf').with(
       source: 'vna.conf.erb',
+      cookbook: 'openvnet',
       owner: 'root',
       group: 'root',
       mode: 0644,

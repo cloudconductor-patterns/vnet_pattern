@@ -43,9 +43,9 @@ host_name = host_info['hostname']
 
 host_interfaces('gretap').each do |name, ifcfg|
   ifcfg['name'] = name
-  ifcfg['vna'] = default_vna['vna']['id'] unless ifcfg['vna']
 
-  remote_server_info = find_vna(ifcfg['vna'])
+  remote_server_info = default_vna
+  remote_server_info = find_vna(ifcfg['vna']) if ifcfg['vna']
 
   remote_addr = remote_server_info['private_ip']
 

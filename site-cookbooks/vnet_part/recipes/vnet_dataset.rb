@@ -18,7 +18,7 @@ def set_datapaths
   server_info('vna').each do |sv|
     vna_conf = sv['vna']
 
-    openvnet_datapath "#{datapath_uuid(vna_conf)}" do
+    openvnet_datapath datapath_uuid(vna_conf) do
       datapath_id vna_conf['datapath_id']
       node_id vna_conf['id']
     end

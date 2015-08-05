@@ -21,6 +21,7 @@ action :create do
 
   template '/etc/openvnet/common.conf' do
     source 'common.conf.erb'
+    cookbook new_resource.cookbook
     owner 'root'
     group 'root'
     mode '0644'
