@@ -10,7 +10,8 @@
 action :create do
   key = "cloudconductor/servers/#{new_resource.hostname}"
 
-  info = CloudConductor::ConsulClient::KeyValueStore.get(key)
+  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+  info = JSON.parse(data)
 
   interfaces = {}
   interfaces = info['interfaces'] if info['interfaces']
@@ -42,7 +43,8 @@ end
 action :update do
   key = "cloudconductor/servers/#{new_resource.hostname}"
 
-  info = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  data = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  info = JSON.parse(data)
 
   info['interfaces'][new_resource.ifname]['hwaddr'] = hwaddr(new_resource.ifname)
 
@@ -53,7 +55,8 @@ end
 
 action :delete do
   key = "cloudconductor/servers/#{new_resource.hostname}"
-  info = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  data = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  info = JSON.parse(data)
   info['interfaces'].delete(new_resource.ifname)
 
   CloudConductor::ConsulUtils::KeyValueStore.put(key, info)

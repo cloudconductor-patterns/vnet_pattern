@@ -30,7 +30,7 @@ describe 'vnet_part::vnet_configure' do
     }
     chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
 
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return({})
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return('{}')
     expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).at_least(:once)
 
     chef_run.converge(described_recipe)
