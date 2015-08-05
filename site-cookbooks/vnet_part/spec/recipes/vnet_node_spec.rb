@@ -154,4 +154,11 @@ describe 'vnet_part::vnet_node' do
       virtual_addr: '10.2.0.4/24'
     )
   end
+
+  it 'edge node' do
+    chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
+    chef_run.converge(described_recipe)
+
+    expect(chef_run).to_not create_gretap('tap1')
+  end
 end

@@ -31,9 +31,11 @@ def find_vna(id)
 end
 
 def host_interfaces(type)
+  interfaces = {}
+
   interfaces = host_info['interfaces'].select do |_, v|
     v['type'] == type
-  end
+  end if host_info['interfaces']
 
   interfaces
 end
