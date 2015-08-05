@@ -14,7 +14,7 @@ end
 use_inline_resources
 
 action :create do
-  cmd = "ovs-vsctl add-port #{bridge} #{port}"
+  cmd = "ovs-vsctl add-port #{new_resource.bridge} #{new_resource.port}"
 
   execute cmd
 
@@ -22,7 +22,7 @@ action :create do
 end
 
 action :delete do
-  cmd = "ovs-vsctl del-port #{bridge} #{port}"
+  cmd = "ovs-vsctl del-port #{new_resource.bridge} #{new_resource.port}"
 
   execute cmd
 

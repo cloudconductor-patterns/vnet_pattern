@@ -10,15 +10,20 @@
 action :create do
   key = "cloudconductor/servers/#{new_resource.hostname}"
 
-  info = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  info = CloudConductor::ConsulClient::KeyValueStore.get(key)
 
-  info['interfaces'][new_resource.ifname] = {
+  interfaces = {}
+  interfaces = info['interfaces'] if info['interfaces']
+
+  interfaces[new_resource.ifname] = {
     uuid: new_resource.uuid,
     type: new_resource.type,
     ipaddr: new_resource.ipaddr
   }
 
-  CloudConductor::ConsulUtils::KeyValueStore.put(key, info)
+  info['interfaces'] = interfaces
+
+  CloudConductor::ConsulClient::KeyValueStore.put(key, info)
 
   new_resource.updated_by_last_action(true)
 end

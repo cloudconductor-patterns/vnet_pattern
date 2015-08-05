@@ -23,11 +23,11 @@ action :create do
   vna_conf['bridge'] = new_resource.bridge if new_resource.bridge
 
   key = "cloudconductor/servers/#{new_resource.hostname}"
-  info = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  info = CloudConductor::ConsulClient::KeyValueStore.get(key)
 
   info['vna'] = vna_conf
 
-  CloudConductor::ConsulUtils::KeyValueStore.put(key, info)
+  CloudConductor::ConsulClient::KeyValueStore.put(key, info)
 
   new_resource.updated_by_last_action(true)
 end

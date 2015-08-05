@@ -8,10 +8,12 @@
 #
 
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper.rb'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 
 describe 'vnet_part::vnet_configure' do
-  # let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(cloudconductor_servers)) }
-  let(:chef_run) { ChefSpec::SoloRunner.new }
+  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(cloudconductor_vnet_edge, cloudconductor_server_interface)) }
+  # let(:chef_run) { ChefSpec::SoloRunner.new }
 
   before do
     chef_run.node.set['cloudconductor']['servers'] = {
@@ -27,6 +29,9 @@ describe 'vnet_part::vnet_configure' do
       }
     }
     chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return({})
+    expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).at_least(:once)
 
     chef_run.converge(described_recipe)
   end

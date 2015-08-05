@@ -11,7 +11,7 @@ actions :create
 default_action :create
 
 attribute :hostname,
-          kind_fo: String,
+          kind_of: String,
           name_attribute: true
 
 attribute :vna_id,

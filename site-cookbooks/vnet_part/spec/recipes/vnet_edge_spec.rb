@@ -10,7 +10,7 @@
 require_relative '../spec_helper'
 
 describe 'vnet_part::vnet_edge' do
-  let(:chef_run) { ChefSpec::SoloRunner.new }
+  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvswitch_port)) }
 
   before do
     chef_run.node.set['cloudconductor']['servers'] = {
@@ -137,11 +137,17 @@ describe 'vnet_part::vnet_edge' do
         bridge: 'br0'
       )
 
+      expect(chef_run).to run_execute('ovs-vsctl add-port br0 tap1')
+
       expect(chef_run).to_not create_openvswitch_port('tap2')
+
+      expect(chef_run).to_not run_execute('ovs-vsctl add-port br0 tap2')
 
       expect(chef_run).to create_openvswitch_port('tap3').with(
         bridge: 'br0'
       )
+
+      expect(chef_run).to run_execute('ovs-vsctl add-port br0 tap3')
     end
   end
 end
