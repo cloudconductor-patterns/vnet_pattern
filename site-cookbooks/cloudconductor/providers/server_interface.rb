@@ -43,12 +43,12 @@ end
 action :update do
   key = "cloudconductor/servers/#{new_resource.hostname}"
 
-  data = CloudConductor::ConsulUtils::KeyValueStore.get(key)
+  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
   info = JSON.parse(data)
 
   info['interfaces'][new_resource.ifname]['hwaddr'] = hwaddr(new_resource.ifname)
 
-  CloudConductor::ConsulUtils::KeyValueStore.put(key, info)
+  CloudConductor::ConsulClient::KeyValueStore.put(key, info)
 
   new_resource.updated_by_last_action(true)
 end

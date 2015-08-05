@@ -8,9 +8,11 @@
 #
 
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper.rb'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 
 describe 'vnet_part::vnet_node' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(vnet_part_gretap)) }
+  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(vnet_part_gretap cloudconductor_server_interface)) }
 
   before do
     chef_run.node.set['cloudconductor']['servers'] = {
@@ -88,6 +90,9 @@ describe 'vnet_part::vnet_node' do
     # chef_run.node.set['ipaddress'] = '192.168.0.10'
     chef_run.node.set['vnet_part']['node_ref'] = 'node1'
 
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return('{"interfaces": {"tap1": {}, "tap2": {}}}')
+    expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).at_least(:once)
+
     chef_run.converge(described_recipe)
   end
 
@@ -153,6 +158,14 @@ describe 'vnet_part::vnet_node' do
       local_addr: '192.168.0.40',
       virtual_addr: '10.2.0.4/24'
     )
+  end
+
+  def update_server_interface(resource_name)
+    ChefSpec::Matchers::ResourceMatcher.new(:cloudconductor_server_interface, :update, resource_name)
+  end
+
+  it 'update interface info' do
+    expect(chef_run).to update_server_interface('tap1')
   end
 
   it 'edge node' do
