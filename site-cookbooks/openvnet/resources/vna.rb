@@ -27,13 +27,15 @@ attribute :hwaddr,
           required: true
 
 attribute :host_addr,
-          kind_of: String
+          kind_of: String,
+          default: '127.0.0.1'
 
 attribute :public_addr,
           kind_of: String
 
 attribute :port,
-          kind_of: [String, Integer]
+          kind_of: [String, Integer],
+          default: 9103
 
 attribute :registry,
           kind_of: Hash

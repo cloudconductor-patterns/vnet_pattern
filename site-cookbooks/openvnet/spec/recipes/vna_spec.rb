@@ -16,8 +16,8 @@ describe 'openvnet::vna' do
     chef_run.node.set['openvnet']['vna']['datapath']['datapath_id'] = '0x000000001'
     chef_run.node.set['openvnet']['vna']['datapath']['hwaddr'] = '02:01:01:00:00:01'
     chef_run.node.set['openvnet']['config']['vna']['id'] = 'test-vna1'
-    chef_run.node.set['openvnet']['config']['vna']['host_addr'] = 'localhost'
-    chef_run.node.set['openvnet']['config']['vna']['public_addr'] = '192.168.0.1'
+    chef_run.node.set['openvnet']['config']['vna']['host'] = 'localhost'
+    chef_run.node.set['openvnet']['config']['vna']['public'] = '192.168.0.1'
     chef_run.node.set['openvnet']['config']['vna']['port'] = 9999
 
     chef_run.converge(described_recipe)
@@ -65,20 +65,45 @@ EOS
     expect(chef_run).to install_package('openvnet-vna')
   end
 
-  it 'create vna.conf file' do
-    expect(chef_run).to create_template('/etc/openvnet/vna.conf').with(
-      source: 'vna.conf.erb',
-      cookbook: 'openvnet',
-      owner: 'root',
-      group: 'root',
-      mode: 0644,
-      variables: {
-        id: 'test-vna1',
-        host: 'localhost',
-        public: '192.168.0.1',
-        port: 9999
-      }
-    )
+  describe 'create vna.conf file' do
+    it do
+      expect(chef_run).to create_template('/etc/openvnet/vna.conf').with(
+        source: 'vna.conf.erb',
+        cookbook: 'openvnet',
+        owner: 'root',
+        group: 'root',
+        mode: 0644,
+        variables: {
+          id: 'test-vna1',
+          host: 'localhost',
+          public: '192.168.0.1',
+          port: 9999
+        }
+      )
+    end
+
+    it 'at default values' do
+      chef_run.node.set['openvnet']['config']['vna']['id'] = nil
+      chef_run.node.set['openvnet']['config']['vna']['host'] = nil
+      chef_run.node.set['openvnet']['config']['vna']['public'] = nil
+      chef_run.node.set['openvnet']['config']['vna']['port'] = nil
+
+      chef_run.converge(described_recipe)
+
+      expect(chef_run).to create_template('/etc/openvnet/vna.conf').with(
+        source: 'vna.conf.erb',
+        cookbook: 'openvnet',
+        owner: 'root',
+        group: 'root',
+        mode: 0644,
+        variables: {
+          id: 'vna',
+          host: '127.0.0.1',
+          public: nil,
+          port: 9103
+        }
+      )
+    end
   end
 
   it 'start the vnet-vna service' do

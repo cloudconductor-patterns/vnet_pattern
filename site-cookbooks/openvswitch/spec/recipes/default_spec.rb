@@ -30,4 +30,25 @@ describe 'openvswitch::default' do
     expect(chef_run).to run_execute('ifdown br0')
     expect(chef_run).to run_execute('ifup br0')
   end
+
+  describe 'create ' do
+    before do
+      chef_run.node.set['openvswitch']['bridge'] = [
+        {
+          name: 'br001',
+          ipaddr: '10.100.0.1,',
+          mask: '255.255.255.0'
+        }
+      ]
+
+      chef_run.converge(described_recipe)
+    end
+
+    it do
+      expect(chef_run).to create_openvswitch('br001').with(
+        ipaddr: '10.100.0.1,',
+        mask: '255.255.255.0'
+      )
+    end
+  end
 end
