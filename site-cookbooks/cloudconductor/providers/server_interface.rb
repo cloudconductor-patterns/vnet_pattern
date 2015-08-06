@@ -7,6 +7,12 @@
 # All rights reserved - Do Not Redistribute
 #
 
+def whyrun_supported?
+  true
+end
+
+use_inline_resources
+
 action :create do
   key = "cloudconductor/servers/#{new_resource.hostname}"
 
