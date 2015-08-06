@@ -36,7 +36,7 @@ action :create do
 end
 
 def hwaddr(dev_name)
-  cmdstr = "ip link show #{dev_name} | awk '/link\/ether/ { print $2 }'"
+  cmdstr = "echo -n $(ip link show #{dev_name} | awk '/link\\/ether/ { print $2 }')"
 
   cmd = Mixlib::ShellOut.new(cmdstr)
   cmd.run_command
