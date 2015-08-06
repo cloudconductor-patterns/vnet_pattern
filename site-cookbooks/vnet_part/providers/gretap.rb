@@ -13,7 +13,23 @@ end
 
 use_inline_resources
 
-action :create do
+def already_exists?
+  cmdstr = "ip addr show #{new_resource.name}"
+
+  cmd = Mixlib::ShellOut.new(cmdstr)
+  cmd.run_command
+  Chef::Log.debug "gretap already_exists?: #{cmdstr}"
+  Chef::Log.debug "gretap already_exists?: #{cmd.stdout}"
+
+  begin
+    cmd.error!
+    true
+  rescue
+    false
+  end
+end
+
+def create_ip_link
   cmd = []
 
   cmd << 'ip link add'
@@ -33,12 +49,21 @@ action :create do
   execute "ip link set #{new_resource.name} up"
 
   execute "ip link set #{new_resource.name} mtu 1450"
+end
 
+def delete_ip_link
+  execute "ip link del #{new_resource.name}"
+end
+
+action :create do
+  delete_ip_link if already_exists?
+  create_ip_link
   new_resource.updated_by_last_action(true)
 end
 
 action :delete do
-  execute "ip link del #{new_resource.name}"
-
-  new_resource.updated_by_last_action(true)
+  if already_exists?
+    delete_ip_link
+    new_resource.updated_by_last_action(true)
+  end
 end
