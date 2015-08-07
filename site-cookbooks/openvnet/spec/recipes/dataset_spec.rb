@@ -130,7 +130,10 @@ describe 'openvnet::dataset' do
             owner_datapath_uuid: 'dp-1',
             network_uuid: 'nw-public1',
             mac_address: '02:01:00:00:00:01',
-            ipv4_address: '192.168.10.11'
+            ipv4_address: '192.168.10.11',
+            ingress_filtering_enabled: true,
+            enable_routing: true,
+            enable_route_translation: true
           }
         ]
       }
@@ -145,17 +148,25 @@ describe 'openvnet::dataset' do
         datapath: 'dp-1',
         network: 'nw-public1',
         mac_addr: '02:01:00:00:00:01',
-        ipv4_addr: '192.168.10.11'
+        ipv4_addr: '192.168.10.11',
+        ingress_filtering: true,
+        routing: true,
+        route_translation: true
       )
 
       cmdstr = 'vnctl interfaces add'
       cmdstr << ' --uuid if-dp1eth0'
+      cmdstr << ' --ingress-filtering-enabled true'
+      cmdstr << ' --enable-routing true'
+      cmdstr << ' --enable-route-translation true'
       cmdstr << ' --owner-datapath-uuid dp-1'
       cmdstr << ' --network-uuid nw-public1'
       cmdstr << ' --mac-address 02:01:00:00:00:01'
       cmdstr << ' --ipv4-address 192.168.10.11'
       cmdstr << ' --port-name eth0'
       cmdstr << ' --mode host'
+
+      expect(chef_run).to run_execute(cmdstr)
     end
   end
 end
