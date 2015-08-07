@@ -37,4 +37,6 @@ action :create do
   cmdstr << "--port-name #{new_resource.port_name}" if new_resource.port_name
 
   cmdstr << "--mode #{new_resource.mode}" if new_resource.mode
+
+  execute cmdstr.join(' ')
 end
