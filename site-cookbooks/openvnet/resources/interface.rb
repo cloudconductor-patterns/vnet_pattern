@@ -36,7 +36,8 @@ attribute :mac_addr,
           kind_of: String
 
 attribute :ipv4_addr,
-          kind_of: String
+          kind_of: String,
+          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/]
 
 attribute :port_name,
           kind_of: String

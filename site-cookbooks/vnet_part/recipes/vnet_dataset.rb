@@ -61,7 +61,7 @@ def set_interfaces
         datapath dp_uuid
         network 'nw-1'
         mac_addr ifcfg['hwaddr']
-        ipv4_addr IPAddr.new(ifcfg['ipaddr']).to_s
+        ipv4_addr ifcfg['ipaddr'].split('/')[0]
         port_name name
       end
     end
