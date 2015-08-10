@@ -7,6 +7,8 @@
 # All rights reserved - Do Not Redistribute
 #
 
+require 'vnet_api_client'
+
 def whyrun_supported?
   true
 end
@@ -31,21 +33,14 @@ def cmd_exists?(cmd_name)
 end
 
 action :create do
-  cmdstr = []
-  cmdstr << 'vnctl datapaths add'
+  VNetAPIClient.uri = "http://#{node['openvnet']['config']['webapi']['host']}:#{node['openvnet']['config']['webapi']['port']}"
+  params = {
+    uuid: new_resource.uuid,
+    dpid: new_resource.datapath_id,
+    node_id: new_resource.node_id
+  }
+  params[:display_name] = new_resource.display_name if new_resource.display_name
+  params[:display_name] = new_resource.uuid unless new_resource.display_name
 
-  cmdstr << '--uuid'
-  cmdstr << new_resource.uuid
-
-  cmdstr << '--display-name'
-  cmdstr << new_resource.display_name if new_resource.display_name
-  cmdstr << new_resource.uuid unless new_resource.display_name
-
-  cmdstr << '--dpid'
-  cmdstr << new_resource.datapath_id
-
-  cmdstr << '--node-id'
-  cmdstr << new_resource.node_id
-
-  execute cmdstr.join(' ')
+  VNetAPIClient::Datapath.create(params)
 end

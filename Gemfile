@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rake'
+gem 'vnet_api_client'
 
 group :development do
   gem 'guard'
