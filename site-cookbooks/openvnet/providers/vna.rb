@@ -14,7 +14,15 @@ end
 use_inline_resources
 
 action :create do
-  %w(host_addr public_addr port).each do |attr|
+  unless new_resource.instance_variable_get('@host_addr')
+    new_resource.instance_variable_set('@host_addr', node['openvnet']['config']['vna']['host'])
+  end
+
+  unless new_resource.instance_variable_get('@public_addr')
+    new_resource.instance_variable_set('@public_addr', node['openvnet']['config']['vna']['public'])
+  end
+
+  %w(port).each do |attr|
     unless new_resource.instance_variable_get("@#{attr}")
       new_resource.instance_variable_set("@#{attr}", node['openvnet']['config']['vna'][attr])
     end

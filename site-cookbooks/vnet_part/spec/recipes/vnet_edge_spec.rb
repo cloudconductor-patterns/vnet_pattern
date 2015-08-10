@@ -10,7 +10,7 @@
 require_relative '../spec_helper'
 
 describe 'vnet_part::vnet_edge' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvswitch_port)) }
+  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvnet_vna openvswitch_port)) }
 
   before do
     chef_run.node.set['cloudconductor']['servers'] = {
@@ -49,6 +49,20 @@ describe 'vnet_part::vnet_edge' do
       registry: {
         'host' => '127.0.0.1',
         'port' => 6379
+      }
+    )
+
+    expect(chef_run).to create_template('/etc/openvnet/vna.conf').with(
+      source: 'vna.conf.erb',
+      cookbook: 'openvnet',
+      owner: 'root',
+      group: 'root',
+      mode: 0644,
+      variables: {
+        id: 'vna1',
+        host: '127.0.0.1',
+        public: nil,
+        port: 9103
       }
     )
   end
