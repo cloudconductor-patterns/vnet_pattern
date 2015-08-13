@@ -16,8 +16,7 @@ use_inline_resources
 def webapi_uri
   config = node['openvnet']['config']
 
-  uri = config['vnctl']['webapi_protocol']
-  uri << '://'
+  uri = "#{config['vnctl']['webapi_protocol']}://"
   uri << config['vnctl']['webapi_uri']
   uri << ':'
   uri << config['vnctl']['webapi_port']
