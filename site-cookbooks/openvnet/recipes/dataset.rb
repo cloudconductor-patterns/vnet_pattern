@@ -40,3 +40,17 @@ node['openvnet']['dataset']['interfaces'].each do |if_info|
     route_translation if_info['enable_route_translation']
   end
 end
+
+node['openvnet']['dataset']['security_groups'].each do |sg_info|
+  interfaces = node['openvnet']['dataset']['interface_security_groups'].select do |v|
+    v['security_group_uuid'] == sg_info['uuid']
+  end
+
+  interfaces = interfaces.map { |v| v['interface_uuid'] }
+
+  openvnet_security_group sg_info['uuid'] do
+    display_name sg_info['display_name']
+    rules sg_info['rules']
+    interfaces interfaces
+  end
+end if node['openvnet']['dataset']['security_groups']

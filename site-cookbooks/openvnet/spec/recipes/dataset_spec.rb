@@ -11,7 +11,9 @@ require_relative '../spec_helper'
 require 'vnet_api_client'
 
 describe 'openvnet::dataset' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvnet_datapath openvnet_network openvnet_interface)) }
+  let(:chef_run) do
+    ChefSpec::SoloRunner.new(step_into: %w(openvnet_datapath openvnet_network openvnet_interface openvnet_security_group))
+  end
 
   describe 'datapaths' do
     before do
@@ -42,6 +44,8 @@ describe 'openvnet::dataset' do
       allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
       allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
       allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
 
       chef_run.converge(described_recipe)
     end
@@ -117,6 +121,8 @@ describe 'openvnet::dataset' do
       allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
       allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
       allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
 
       chef_run.converge(described_recipe)
     end
@@ -185,6 +191,8 @@ describe 'openvnet::dataset' do
       allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
       allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
       allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
 
       chef_run.converge(described_recipe)
     end
@@ -218,6 +226,46 @@ describe 'openvnet::dataset' do
       }
       expect(VNetAPIClient::Interface).to receive(:create).with(params)
       chef_run.converge(described_recipe)
+    end
+  end
+
+  describe 'security_group' do
+    before do
+      chef_run.node.set['openvnet']['dataset'] = {
+        datapaths: [],
+        networks: [],
+        interfaces: [],
+        security_groups: [{
+          uuid: 'sg-shared',
+          rules: [
+            'tcp:22:0.0.0.0/0',
+            'icmp:-1:0.0.0.0/0'
+          ]
+        }],
+        interface_security_groups: [
+          { interface_uuid: 'if-01', security_group_uuid: 'sg-shared' },
+          { interface_uuid: 'if-01', security_group_uuid: 'sg-web' },
+          { interface_uuid: 'if-02', security_group_uuid: 'sg-shared' },
+          { interface_uuid: 'if-02', security_group_uuid: 'sg-ap' },
+          { interface_uuid: 'if-03', security_group_uuid: 'sg-shared' },
+          { interface_uuid: 'if-03', security_group_uuid: 'sg-db' }
+        ]
+      }
+
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
+
+      chef_run.converge(described_recipe)
+    end
+
+    it do
+      expect(chef_run).to create_openvnet_security_group('sg-shared').with(
+        rules: ['tcp:22:0.0.0.0/0', 'icmp:-1:0.0.0.0/0'],
+        interfaces: ['if-01', 'if-02', 'if-03']
+      )
     end
   end
 end

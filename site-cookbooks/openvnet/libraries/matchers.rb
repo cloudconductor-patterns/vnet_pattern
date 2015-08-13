@@ -28,4 +28,8 @@ if defined?(ChefSpec)
   def create_openvnet_interface(resource_name)
     ChefSpec::Matchers::ResourceMatcher.new(:openvnet_interface, :create, resource_name)
   end
+
+  def create_openvnet_security_group(resource_name)
+    ChefSpec::Matchers::ResourceMatcher.new(:openvnet_security_group, :create, resource_name)
+  end
 end
