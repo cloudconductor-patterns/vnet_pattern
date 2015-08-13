@@ -36,7 +36,7 @@ default['openvnet']['config']['vna']['public'] = nil
 default['openvnet']['config']['vna']['port'] = 9103
 
 default['openvnet']['config']['vnctl']['webapi_protocol'] = 'http'
-default['openvnet']['config']['vnctl']['webapi_uri'] = '127.0.0.1'
+default['openvnet']['config']['vnctl']['webapi_uri'] = 'localhost'
 default['openvnet']['config']['vnctl']['webapi_port'] = '9090'
 default['openvnet']['config']['vnctl']['webapi_version'] = '1.0'
 default['openvnet']['config']['vnctl']['output_format'] = 'yml'

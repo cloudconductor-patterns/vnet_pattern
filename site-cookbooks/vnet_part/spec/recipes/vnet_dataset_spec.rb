@@ -10,7 +10,7 @@
 require_relative '../spec_helper'
 
 describe 'vnet_part::vnet_dataset' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvnet_interface)) }
+  let(:chef_run) { ChefSpec::SoloRunner.new }
 
   before do
     chef_run.node.set['cloudconductor']['servers'] = {
@@ -50,6 +50,10 @@ describe 'vnet_part::vnet_dataset' do
   end
 
   it do
+    expect(chef_run).to include_recipe('openvnet::dataset')
+  end
+
+  it do
     expect(chef_run).to create_openvnet_datapath('dp-01').with(
       datapath_id: '0x00029999010001',
       node_id: 'vna1'
@@ -72,15 +76,5 @@ describe 'vnet_part::vnet_dataset' do
       mac_addr: '02:00:99:01:00:01',
       port_name: 'gre_n1'
     )
-
-    cmdstr = 'vnctl interfaces add'
-    cmdstr << ' --uuid if-n1'
-    cmdstr << ' --owner-datapath-uuid dp-01'
-    cmdstr << ' --network-uuid nw-1'
-    cmdstr << ' --mac-address 02:00:99:01:00:01'
-    cmdstr << ' --ipv4-address 10.1.0.1'
-    cmdstr << ' --port-name gre_n1'
-
-    expect(chef_run).to run_execute(cmdstr)
   end
 end

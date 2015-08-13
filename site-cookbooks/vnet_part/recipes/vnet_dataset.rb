@@ -14,25 +14,41 @@ def datapath_uuid(vna_conf)
   "dp-#{vna_conf['datapath_id'].slice(-2, 2)}"
 end
 
-def set_datapaths
+def datapaths
+  result = []
+
   server_info('vna').each do |sv|
     vna_conf = sv['vna']
 
-    openvnet_datapath datapath_uuid(vna_conf) do
-      datapath_id vna_conf['datapath_id']
-      node_id vna_conf['id']
-    end
+    cfg = {
+      uuid: datapath_uuid(vna_conf),
+      node_id: vna_conf['id'],
+      display_name: nil,
+      dpid: vna_conf['datapath_id']
+    }
+
+    result << cfg
   end
+
+  result
 end
 
-def set_networks
+def networks
+  result = []
+
   config = node['vnet_part']['config']
 
-  openvnet_network 'nw-1' do
-    ipv4_network config['network']['virtual']['addr']
-    ipv4_prefix config['network']['virtual']['mask']
-    mode 'virtual'
-  end
+  cfg = {
+    uuid: 'nw-1',
+    display_name: nil,
+    ipv4_network: config['network']['virtual']['addr'],
+    ipv4_prefix: config['network']['virtual']['mask'],
+    network_mode: 'virtual'
+  }
+
+  result << cfg
+
+  result
 end
 
 def find_vna(vna_id)
@@ -45,7 +61,9 @@ def find_vna(vna_id)
   result.first
 end
 
-def set_interfaces
+def interfaces
+  result = []
+
   node_servers.each do |sv|
     interfaces = sv['interfaces'].select do |_, v|
       v['type'] == 'gretap'
@@ -57,26 +75,33 @@ def set_interfaces
 
       dp_uuid = datapath_uuid(vna_conf)
 
-      openvnet_interface ifcfg['uuid'] do
-        datapath dp_uuid
-        network 'nw-1'
-        mac_addr ifcfg['hwaddr']
-        ipv4_addr ifcfg['ipaddr'].split('/')[0]
-        port_name name
-      end
+      cfg = {
+        uuid: ifcfg['uuid'],
+        owner_datapath_uuid: dp_uuid,
+        network_uuid: 'nw-1',
+        mac_address: ifcfg['hwaddr'],
+        ipv4_address: ifcfg['ipaddr'].split('/')[0],
+        port_name: name
+      }
+
+      result << cfg
     end
   end
+
+  result
 end
 
 def set_security_groups
 end
 
 def dataset_configure
-  set_datapaths
-  set_networks
-  set_interfaces
+  node.set['openvnet']['dataset']['datapaths'] = datapaths
+  node.set['openvnet']['dataset']['networks'] = networks
+  node.set['openvnet']['dataset']['interfaces'] = interfaces
 
   set_security_groups
+
+  include_recipe 'openvnet::dataset'
 end
 
 dataset_configure if host_info['roles'].include?('vnmgr')
