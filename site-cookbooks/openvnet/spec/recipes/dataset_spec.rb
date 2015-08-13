@@ -8,42 +8,58 @@
 #
 
 require_relative '../spec_helper'
+require 'vnet_api_client'
 
 describe 'openvnet::dataset' do
   let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvnet_datapath openvnet_network openvnet_interface)) }
 
-  before do
-    chef_run.node.set['openvnet']['dataset'] = {
-      datapaths: [
-        {
-          uuid: 'dp-1',
-          node_id: 'vna1',
-          display_name: 'node1',
-          dpid: '0x0000aaaaaaaaaaaa'
-        },
-        {
-          uuid: 'dp-2',
-          node_id: 'vna2',
-          dpid: '0x0000bbbbbbbbbbbb'
-        }
-      ],
-      networks: [],
-      interfaces: []
-    }
-
-    chef_run.converge(described_recipe)
-  end
-
   describe 'datapaths' do
+    before do
+      chef_run.node.set['openvnet']['config'] = {
+        vnctl: {
+          webapi_uri: 'localhost',
+          webapi_port: '9101'
+        }
+      }
+      chef_run.node.set['openvnet']['dataset'] = {
+        datapaths: [
+          {
+            uuid: 'dp-1',
+            node_id: 'vna1',
+            display_name: 'node1',
+            dpid: '0x0000aaaaaaaaaaaa'
+          },
+          {
+            uuid: 'dp-2',
+            node_id: 'vna2',
+            dpid: '0x0000bbbbbbbbbbbb'
+          }
+        ],
+        networks: [],
+        interfaces: []
+      }
+
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+
+      chef_run.converge(described_recipe)
+    end
+
+    it do
+      expect(chef_run).to install_gem_package('vnet_api_client')
+    end
+
+    it do
+      expect(VNetAPIClient::ApiResource.api_uri).to eq('http://localhost:9101')
+    end
+
     it do
       expect(chef_run).to create_openvnet_datapath('dp-1').with(
         node_id: 'vna1',
         display_name: 'node1',
         datapath_id: '0x0000aaaaaaaaaaaa'
       )
-
-      cmdstr = 'vnctl datapaths add --uuid dp-1 --display-name node1 --dpid 0x0000aaaaaaaaaaaa --node-id vna1'
-      expect(chef_run).to run_execute(cmdstr)
     end
 
     it do
@@ -52,10 +68,28 @@ describe 'openvnet::dataset' do
         display_name: nil,
         datapath_id: '0x0000bbbbbbbbbbbb'
       )
+    end
 
-      cmdstr = 'vnctl datapaths add --uuid dp-2 --display-name dp-2 --dpid 0x0000bbbbbbbbbbbb --node-id vna2'
+    it do
+      params = {
+        uuid: 'dp-1',
+        dpid: '0x0000aaaaaaaaaaaa',
+        node_id: 'vna1',
+        display_name: 'node1'
+      }
+      expect(VNetAPIClient::Datapath).to receive(:create).with(params)
+      chef_run.converge(described_recipe)
+    end
 
-      expect(chef_run).to run_execute(cmdstr)
+    it do
+      params = {
+        uuid: 'dp-2',
+        dpid: '0x0000bbbbbbbbbbbb',
+        node_id: 'vna2',
+        display_name: 'dp-2'
+      }
+      expect(VNetAPIClient::Datapath).to receive(:create).with(params)
+      chef_run.converge(described_recipe)
     end
   end
 
@@ -80,6 +114,10 @@ describe 'openvnet::dataset' do
         interfaces: []
       }
 
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+
       chef_run.converge(described_recipe)
     end
 
@@ -91,29 +129,35 @@ describe 'openvnet::dataset' do
         domain_name: 'public',
         mode: 'physical'
       )
+    end
 
-      cmdstr = 'vnctl networks add'
-      cmdstr << ' --uuid nw-public1'
-      cmdstr << ' --display-name public1'
-      cmdstr << ' --ipv4-network 192.168.0.0'
-      cmdstr << ' --ipv4-prefix 24'
-      cmdstr << ' --domain-name public'
-      cmdstr << ' --network-mode physical'
-
-      expect(chef_run).to run_execute(cmdstr)
+    it do
+      params = {
+        uuid: 'nw-public1',
+        ipv4_network: '192.168.0.0',
+        display_name: 'public1',
+        ipv4_prefix: 24,
+        domain_name: 'public',
+        network_mode: 'physical'
+      }
+      expect(VNetAPIClient::Network).to receive(:create).with(params)
+      chef_run.converge(described_recipe)
     end
 
     it do
       expect(chef_run).to create_openvnet_network('nw-public2').with(
         ipv4_network: '192.168.20.0'
       )
+    end
 
-      cmdstr = 'vnctl networks add'
-      cmdstr << ' --uuid nw-public2'
-      cmdstr << ' --display-name nw-public2'
-      cmdstr << ' --ipv4-network 192.168.20.0'
-
-      expect(chef_run).to run_execute(cmdstr)
+    it do
+      params = {
+        uuid: 'nw-public2',
+        display_name: 'nw-public2',
+        ipv4_network: '192.168.20.0'
+      }
+      expect(VNetAPIClient::Network).to receive(:create).with(params)
+      chef_run.converge(described_recipe)
     end
   end
 
@@ -138,6 +182,10 @@ describe 'openvnet::dataset' do
         ]
       }
 
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
+      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
+
       chef_run.converge(described_recipe)
     end
 
@@ -153,20 +201,23 @@ describe 'openvnet::dataset' do
         routing: true,
         route_translation: true
       )
+    end
 
-      cmdstr = 'vnctl interfaces add'
-      cmdstr << ' --uuid if-dp1eth0'
-      cmdstr << ' --ingress-filtering-enabled true'
-      cmdstr << ' --enable-routing true'
-      cmdstr << ' --enable-route-translation true'
-      cmdstr << ' --owner-datapath-uuid dp-1'
-      cmdstr << ' --network-uuid nw-public1'
-      cmdstr << ' --mac-address 02:01:00:00:00:01'
-      cmdstr << ' --ipv4-address 192.168.10.11'
-      cmdstr << ' --port-name eth0'
-      cmdstr << ' --mode host'
-
-      expect(chef_run).to run_execute(cmdstr)
+    it do
+      params = {
+        uuid: 'if-dp1eth0',
+        ingress_filtering_enabled: true,
+        enable_routing: true,
+        enable_route_translation: true,
+        owner_datapath_uuid: 'dp-1',
+        network_uuid: 'nw-public1',
+        mac_address: '02:01:00:00:00:01',
+        ipv4_address: '192.168.10.11',
+        port_name: 'eth0',
+        mode: 'host'
+      }
+      expect(VNetAPIClient::Interface).to receive(:create).with(params)
+      chef_run.converge(described_recipe)
     end
   end
 end

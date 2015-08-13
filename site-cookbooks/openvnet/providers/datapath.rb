@@ -30,22 +30,27 @@ def cmd_exists?(cmd_name)
   end
 end
 
+def webapi_uri
+  config = node['openvnet']['config']
+
+  uri = "#{config['vnctl']['webapi_protocol']}://"
+  uri << config['vnctl']['webapi_uri']
+  uri << ':'
+  uri << config['vnctl']['webapi_port']
+end
+
 action :create do
-  cmdstr = []
-  cmdstr << 'vnctl datapaths add'
+  require 'vnet_api_client'
 
-  cmdstr << '--uuid'
-  cmdstr << new_resource.uuid
+  VNetAPIClient.uri = webapi_uri
 
-  cmdstr << '--display-name'
-  cmdstr << new_resource.display_name if new_resource.display_name
-  cmdstr << new_resource.uuid unless new_resource.display_name
+  params = {
+    uuid: new_resource.uuid,
+    dpid: new_resource.datapath_id,
+    node_id: new_resource.node_id
+  }
+  params[:display_name] = new_resource.display_name if new_resource.display_name
+  params[:display_name] = new_resource.uuid unless new_resource.display_name
 
-  cmdstr << '--dpid'
-  cmdstr << new_resource.datapath_id
-
-  cmdstr << '--node-id'
-  cmdstr << new_resource.node_id
-
-  execute cmdstr.join(' ')
+  VNetAPIClient::Datapath.create(params)
 end

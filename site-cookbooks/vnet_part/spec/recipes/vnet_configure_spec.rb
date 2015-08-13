@@ -56,7 +56,7 @@ describe 'vnet_part::vnet_configure' do
     expect(chef_run).to create_server_interface('tapn1').with(
       hostname: 'node1',
       uuid: 'if-n1',
-      type:  'gretap',
+      type: 'gretap',
       ipaddr: '10.1.0.1/24'
     )
   end
