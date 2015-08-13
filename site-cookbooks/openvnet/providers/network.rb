@@ -13,10 +13,20 @@ end
 
 use_inline_resources
 
+def webapi_uri
+  config = node['openvnet']['config']
+
+  uri = config['vnctl']['webapi_protocol']
+  uri << '://'
+  uri << config['vnctl']['webapi_uri']
+  uri << ':'
+  uri << config['vnctl']['webapi_port']
+end
+
 action :create do
   require 'vnet_api_client'
 
-  VNetAPIClient.uri = "http://#{node['openvnet']['config']['webapi']['host']}:#{node['openvnet']['config']['webapi']['port']}"
+  VNetAPIClient.uri = webapi_uri
   params = {
     uuid: new_resource.uuid,
     ipv4_network: new_resource.ipv4_network

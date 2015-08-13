@@ -30,10 +30,20 @@ def cmd_exists?(cmd_name)
   end
 end
 
+def webapi_uri
+  config = node['openvnet']['config']
+
+  uri = "#{config['vnctl']['webapi_protocol']}://"
+  uri << config['vnctl']['webapi_uri']
+  uri << ':'
+  uri << config['vnctl']['webapi_port']
+end
+
 action :create do
   require 'vnet_api_client'
 
-  VNetAPIClient.uri = "http://#{node['openvnet']['config']['webapi']['host']}:#{node['openvnet']['config']['webapi']['port']}"
+  VNetAPIClient.uri = webapi_uri
+
   params = {
     uuid: new_resource.uuid,
     dpid: new_resource.datapath_id,

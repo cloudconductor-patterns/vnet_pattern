@@ -16,9 +16,9 @@ describe 'openvnet::dataset' do
   describe 'datapaths' do
     before do
       chef_run.node.set['openvnet']['config'] = {
-        webapi: {
-          host: 'localhost',
-          port: '9101'
+        vnctl: {
+          webapi_uri: 'localhost',
+          webapi_port: '9101'
         }
       }
       chef_run.node.set['openvnet']['dataset'] = {
