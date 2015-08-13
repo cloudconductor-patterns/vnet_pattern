@@ -47,6 +47,10 @@ describe 'openvnet::dataset' do
     end
 
     it do
+      expect(chef_run).to install_gem_package('vnet_api_client')
+    end
+
+    it do
       expect(VNetAPIClient::ApiResource.api_uri).to eq('http://localhost:9101')
     end
 

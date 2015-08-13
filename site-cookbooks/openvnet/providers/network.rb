@@ -7,8 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-require 'vnet_api_client'
-
 def whyrun_supported?
   true
 end
@@ -16,6 +14,8 @@ end
 use_inline_resources
 
 action :create do
+  require 'vnet_api_client'
+
   VNetAPIClient.uri = "http://#{node['openvnet']['config']['webapi']['host']}:#{node['openvnet']['config']['webapi']['port']}"
   params = {
     uuid: new_resource.uuid,

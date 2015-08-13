@@ -7,8 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-require 'vnet_api_client'
-
 def whyrun_supported?
   true
 end
@@ -33,6 +31,8 @@ def cmd_exists?(cmd_name)
 end
 
 action :create do
+  require 'vnet_api_client'
+
   VNetAPIClient.uri = "http://#{node['openvnet']['config']['webapi']['host']}:#{node['openvnet']['config']['webapi']['port']}"
   params = {
     uuid: new_resource.uuid,

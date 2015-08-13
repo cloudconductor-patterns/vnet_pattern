@@ -7,6 +7,8 @@
 # All rights reserved - Do Not Redistribute
 #
 
+gem_package 'vnet_api_client'
+
 node['openvnet']['dataset']['datapaths'].each do |dp_info|
   openvnet_datapath dp_info['uuid'] do
     node_id dp_info['node_id']
