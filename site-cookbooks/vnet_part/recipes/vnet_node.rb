@@ -10,56 +10,37 @@
 extend CloudConductor::CommonHelper
 extend CloudConductor::VnetPartHelper
 
-def default_vna
-  remote_server_info = server_info('vna')
-
-  remote_server_info = remote_server_info.select do |v|
-    v['vna']['id'] == host_info['vna']
-  end if host_info['vna']
-
-  remote_server_info.first
+def virtual_network_prefix(network_name)
+  nwcfg = network_conf['networks'][network_name]
+  nwcfg['ipv4_prefix']
 end
 
-def find_vna(id)
-  remote_server_info = server_info('vna')
-
-  remote_server_info = remote_server_info.select do |v|
-    v['vna']['id'] == id
-  end
-
-  remote_server_info.first
+def edge_server
+  servers = server_info('vna')
+  servers.first
 end
 
-def host_interfaces(type)
-  interfaces = {}
+gretap_interfaces(host_info).each do |ifname, ifcfg|
+  host_name = host_info['hostname']
+  remote_addr = edge_server['private_ip']
+  local_addr = host_info['private_ip']
+  virtual_addr = ifcfg['virtual_address']
+  virtual_prefix = ifcfg['virtual_prefix']
+  virtual_prefix ||= virtual_network_prefix(ifcfg['network'])
 
-  interfaces = host_info['interfaces'].select do |_, v|
-    v['type'] == type
-  end if host_info['interfaces']
-
-  interfaces
-end
-
-local_addr = host_info['private_ip']
-host_name = host_info['hostname']
-
-host_interfaces('gretap').each do |name, ifcfg|
-  ifcfg['name'] = name
-
-  remote_server_info = default_vna
-  remote_server_info = find_vna(ifcfg['vna']) if ifcfg['vna']
-
-  remote_addr = remote_server_info['private_ip']
-
-  vnet_part_gretap ifcfg['name'] do
+  vnet_part_gretap ifname do
     remote_addr remote_addr
     local_addr local_addr
-    virtual_addr ifcfg['ipaddr']
+    virtual_addr virtual_addr
+    virtual_prefix virtual_prefix
   end
 
-  cloudconductor_server_interface ifcfg['name'] do
+  cloudconductor_server_interface "#{host_name}_#{ifname}" do
     hostname host_name
-    ifname ifcfg['name']
-    action :update
+    if_name ifname
+    remote_address remote_addr
+    local_address local_addr
+    virtual_address virtual_addr
+    virtual_prefix virtual_prefix
   end
 end

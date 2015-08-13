@@ -21,6 +21,12 @@ module CloudConductor
           response.body
         end
 
+        def keys(key)
+          response = ConsulClient.http.get ConsulClient.request_url("kv/#{key}?keys")
+
+          response.body
+        end
+
         def delete(key)
           ConsulClient.http.delete ConsulClient.request_url("kv/#{key}")
         end

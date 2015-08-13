@@ -43,7 +43,8 @@ def create_ip_link
   execute cmd.join(' ')
 
   if new_resource.virtual_addr
-    execute "ip addr add #{new_resource.virtual_addr} dev #{new_resource.name}"
+    address = "#{new_resource.virtual_addr}/#{new_resource.virtual_prefix}"
+    execute "ip addr add #{address} dev #{new_resource.name}"
   end
 
   execute "ip link set #{new_resource.name} up"

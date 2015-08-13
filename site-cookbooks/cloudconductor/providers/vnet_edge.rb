@@ -13,22 +13,27 @@ end
 
 use_inline_resources
 
+def key
+  "cloudconductor/networks/#{new_resource.hostname}/vna"
+end
+
 action :create do
-  vna_conf = {
+  current_info = {}
+  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+  current_info = JSON.parse(data) if data
+
+  new_info = {
     id: new_resource.vna_id,
     hwaddr: new_resource.hwaddr,
     datapath_id: new_resource.datapath_id
   }.with_indifferent_access
 
-  vna_conf['bridge'] = new_resource.bridge if new_resource.bridge
+  new_info['bridge'] = new_resource.bridge if new_resource.bridge
 
-  key = "cloudconductor/servers/#{new_resource.hostname}"
-  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-  info = JSON.parse(data)
+  info = current_info.merge(new_info)
 
-  info['vna'] = vna_conf
-
-  CloudConductor::ConsulClient::KeyValueStore.put(key, info)
-
-  new_resource.updated_by_last_action(true)
+  unless info == current_info
+    CloudConductor::ConsulClient::KeyValueStore.put(key, info)
+    new_resource.updated_by_last_action(true)
+  end
 end

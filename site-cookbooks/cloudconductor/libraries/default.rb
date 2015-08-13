@@ -28,7 +28,7 @@ module CloudConductor
           server_info.with_indifferent_access
         end
       else
-        result = {}
+        result = []
       end
       result
     end
@@ -52,9 +52,44 @@ module CloudConductor
           server_info.with_indifferent_access
         end
       else
+        result = []
+      end
+      result
+    end
+
+    def platform_pattern
+      if node['cloudconductor'] && node['cloudconductor']['patterns']
+        patterns = node['cloudconductor']['patterns'].to_hash.select do |_, info|
+          info['type'] == 'platform'
+        end
+        result = patterns.map do |name, info|
+          info['name'] = name
+          info.with_indifferent_access
+        end
+        result = result.first
+      else
         result = {}
       end
       result
+    end
+
+    def optional_patterns
+      if node['cloudconductor'] && node['cloudconductor']['patterns']
+        patterns = node['cloudconductor']['patterns'].to_hash.select do |_, info|
+          info['type'] == 'optional'
+        end
+        result = patterns.map do |name, info|
+          info['name'] = name
+          info.with_indifferent_access
+        end
+      else
+        result = []
+      end
+      result
+    end
+
+    def patterns_dir
+      node['cloudconductor']['config']['patterns_dir']
     end
   end
 end

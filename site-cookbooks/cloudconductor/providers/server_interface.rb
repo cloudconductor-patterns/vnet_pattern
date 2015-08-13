@@ -13,26 +13,36 @@ end
 
 use_inline_resources
 
+def key
+  "cloudconductor/networks/#{new_resource.hostname}/#{new_resource.if_name}"
+end
+
 action :create do
-  key = "cloudconductor/servers/#{new_resource.hostname}"
-
+  current_info = {}
   data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-  info = JSON.parse(data)
+  current_info = JSON.parse(data) if data
 
-  interfaces = {}
-  interfaces = info['interfaces'] if info['interfaces']
+  new_info = {}
+  new_info['type'] = new_resource.type if new_resource.type
+  new_info['network'] = new_resource.network if new_resource.network
+  new_info['security_groups'] = new_resource.security_groups if new_resource.security_groups
+  new_info['remote_address'] = new_resource.remote_address if new_resource.remote_address
+  new_info['local_address'] = new_resource.local_address if new_resource.local_address
+  new_info['virtual_address'] = new_resource.virtual_address if new_resource.virtual_address
+  new_info['virtual_prefix'] = new_resource.virtual_prefix if new_resource.virtual_prefix
+  new_info['uuid'] = new_resource.uuid if new_resource.uuid
+  new_info['hwaddr'] = new_resource.hwaddr if new_resource.hwaddr
+  new_info['hwaddr'] = hwaddr(new_resource.if_name) unless new_resource.hwaddr if new_resource.remote_address
+  new_info['port_name'] = new_resource.port_name if new_resource.port_name
 
-  interfaces[new_resource.ifname] = {
-    uuid: new_resource.uuid,
-    type: new_resource.type,
-    ipaddr: new_resource.ipaddr
-  }
+  info = current_info.merge(new_info)
 
-  info['interfaces'] = interfaces
+  unless info == current_info
+    info['update'] = true
 
-  CloudConductor::ConsulClient::KeyValueStore.put(key, info)
-
-  new_resource.updated_by_last_action(true)
+    CloudConductor::ConsulClient::KeyValueStore.put(key, info)
+    new_resource.updated_by_last_action(true)
+  end
 end
 
 def hwaddr(dev_name)
@@ -40,32 +50,20 @@ def hwaddr(dev_name)
 
   cmd = Mixlib::ShellOut.new(cmdstr)
   cmd.run_command
-  Chef::Log.debug "server_nterface_hwaddr: #{cmdstr}"
-  Chef::Log.debug "server_nterface_hwaddr: #{cmd.stdout}"
 
-  cmd.stdout
-end
+  begin
+    cmd.error!
+    ret = cmd.stdout
+  rescue
+    Chef::Log.debug "server_nterface_hwaddr: #{cmdstr}"
+    Chef::Log.debug "server_nterface_hwaddr: #{cmd.stdout}"
+  end
 
-action :update do
-  key = "cloudconductor/servers/#{new_resource.hostname}"
-
-  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-  info = JSON.parse(data)
-
-  info['interfaces'][new_resource.ifname]['hwaddr'] = hwaddr(new_resource.ifname)
-
-  CloudConductor::ConsulClient::KeyValueStore.put(key, info)
-
-  new_resource.updated_by_last_action(true)
+  ret
 end
 
 action :delete do
-  key = "cloudconductor/servers/#{new_resource.hostname}"
-  data = CloudConductor::ConsulUtils::KeyValueStore.get(key)
-  info = JSON.parse(data)
-  info['interfaces'].delete(new_resource.ifname)
-
-  CloudConductor::ConsulUtils::KeyValueStore.put(key, info)
+  CloudConductor::ConsulUtils::KeyValueStore.delete(key)
 
   new_resource.updated_by_last_action(true)
 end

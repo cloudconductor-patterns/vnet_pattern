@@ -7,26 +7,54 @@
 # All rights reserved - Do Not Redistribute
 #
 
-actions :create, :update, :delete
+actions :create, :delete
 default_action :create
+
+attribute :name,
+          kind_of: String,
+          name_attribute: true
 
 attribute :hostname,
           kind_of: String,
           required: true
 
-attribute :ifname,
+attribute :if_name,
           kind_of: String,
-          name_attribute: true
-
-attribute :uuid,
-          kind_of: String,
-          regex: [/^if-.+$/]
+          required: true
 
 attribute :type,
           kind_of: String,
           default: 'gretap'
 
-attribute :ipaddr,
+attribute :network,
+          kind_of: String
+
+attribute :security_groups,
+          kind_of: Array
+
+attribute :remote_address,
+          kind_of: String,
+          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/]
+
+attribute :local_address,
+          kind_of: String,
+          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/]
+
+attribute :virtual_address,
           kind_of: String,
           default: nil,
-          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+$/]
+          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/]
+
+attribute :virtual_prefix,
+          kind_of: Integer
+
+attribute :uuid,
+          kind_of: String,
+          regex: [/^if-.+$/]
+
+attribute :hwaddr,
+          kind_of: String,
+          regex: [/^[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F]+$/]
+
+attribute :port_name,
+          kind_of: String

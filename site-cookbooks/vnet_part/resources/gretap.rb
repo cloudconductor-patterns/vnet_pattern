@@ -27,4 +27,8 @@ attribute :local_addr,
 attribute :virtual_addr,
           kind_of: String,
           default: nil,
-          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+$/]
+          regex: [/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/]
+
+attribute :virtual_prefix,
+          kind_of: Integer,
+          default: 24
