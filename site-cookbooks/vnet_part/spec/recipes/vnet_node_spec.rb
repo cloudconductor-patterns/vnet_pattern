@@ -30,10 +30,7 @@ describe 'vnet_part::vnet_node' do
       edge1: {
         private_ip: '192.168.0.1',
         public_ip: '',
-        roles: %w(vna vnmgr),
-        vna: {
-          id: 'vna1'
-        }
+        roles: %w(vna vnmgr)
       },
       node1: {
         private_ip: '192.168.0.10',
@@ -46,14 +43,15 @@ describe 'vnet_part::vnet_node' do
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:get)
-      .and_return('{}')
+      .and_return(nil)
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:keys)
-      .and_return('[]')
+      .and_return(nil)
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:put)
+      .and_return(nil)
 
     netwrok_conf = {
       networks: {
@@ -101,13 +99,16 @@ describe 'vnet_part::vnet_node' do
       .with('cloudconductor/networks/node1/tap1')
       .and_return('{"virtual_address": "10.1.0.1"}')
 
+    allow_any_instance_of(Mixlib::ShellOut).to receive(:error!).and_return(0)
+    allow_any_instance_of(Mixlib::ShellOut).to receive(:stdout).and_return('02:00:0a:01:00:01')
+
     ret_ifcfg = {
       type: 'gretap',
       remote_address: '192.168.0.1',
       local_address: '192.168.0.10',
       virtual_address: '10.1.0.1',
       virtual_prefix: 24,
-      hwaddr: '',
+      hwaddr: '02:00:0a:01:00:01',
       update: true
     }.with_indifferent_access
 

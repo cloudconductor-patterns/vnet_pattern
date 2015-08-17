@@ -52,9 +52,9 @@ describe 'vnet_part::vnet_configure' do
 
     chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
 
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return('{}')
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('[]')
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return(nil)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return(nil)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).and_return(nil)
 
     nwcfg_default = {
       networks: {},
@@ -271,6 +271,7 @@ describe 'vnet_part::vnet_configure' do
 
       ifcfg = {
         'type' => 'gretap',
+        'network' => 'vnet1',
         'virtual_address' => '10.1.0.1',
         'update' => true
       }
@@ -285,6 +286,8 @@ describe 'vnet_part::vnet_configure' do
       expect(chef_run).to create_server_interface('node1_tap1').with(
         hostname: 'node1',
         if_name: 'tap1',
+        network: 'vnet1',
+        security_groups: nil,
         virtual_address: '10.1.0.1'
       )
     end
@@ -303,7 +306,11 @@ describe 'vnet_part::vnet_configure' do
             interfaces: {
               tap2: {
                 type: 'gretap',
-                network: 'vnet2'
+                network: 'vnet2',
+                security_groups: [
+                  'tcp:22:0.0.0.0/0',
+                  'icmp:-1:0.0.0.0/0'
+                ]
               }
             }
           }
@@ -315,6 +322,22 @@ describe 'vnet_part::vnet_configure' do
         .and_return(nwcfg_tomcat)
         .once
 
+      ifcfg = {
+        'type' => 'gretap',
+        'network' => 'vnet2',
+        'security_groups' => [
+          'tcp:22:0.0.0.0/0',
+          'icmp:-1:0.0.0.0/0'
+        ],
+        'virtual_address' => '10.20.0.1',
+        'update' => true
+      }
+
+      expect(CloudConductor::ConsulClient::KeyValueStore)
+        .to receive(:put)
+        .with('cloudconductor/networks/node1/tap2', ifcfg)
+        .at_least(:once)
+
       chef_run.converge(described_recipe)
 
       expect(chef_run).to_not create_server_interface('node1_tap1')
@@ -322,6 +345,11 @@ describe 'vnet_part::vnet_configure' do
       expect(chef_run).to create_server_interface('node1_tap2').with(
         hostname: 'node1',
         if_name: 'tap2',
+        network: 'vnet2',
+        security_groups: [
+          'tcp:22:0.0.0.0/0',
+          'icmp:-1:0.0.0.0/0'
+        ],
         virtual_address: '10.20.0.1'
       )
     end

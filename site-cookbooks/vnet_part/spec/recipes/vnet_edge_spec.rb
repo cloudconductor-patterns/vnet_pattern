@@ -7,32 +7,27 @@
 # All rights reserved - Do Not Redistribute
 #
 
+require 'active_support'
+require 'active_support/core_ext'
+
 require_relative '../spec_helper'
 require_relative '../../../cloudconductor/libraries/consul_helper.rb'
 require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 
 describe 'vnet_part::vnet_edge' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(openvnet_vna openvswitch_port)) }
+  let(:chef_run) do
+    ChefSpec::SoloRunner.new(step_into: %w(openvnet_vna openvswitch_port cloudconductor_server_interface))
+  end
 
   before do
     chef_run.node.set['cloudconductor']['servers'] = {
       edge1: {
         private_ip: '192.168.0.1',
-        roles: %w(vna vnmgr),
-        vna: {
-          id: 'vna1',
-          hwaddr: '02:99:99:01:00:01',
-          datapath_id: '0x00029999010001'
-        }
+        roles: %w(vna vnmgr)
       },
       edge2: {
         private_ip: '192.168.0.2',
-        roles: 'vna',
-        vna: {
-          id: 'vna2',
-          hwaddr: '02:99:99:01:00:02',
-          datapath_id: '0x00029999010002'
-        }
+        roles: 'vna'
       }
     }
 
@@ -43,15 +38,37 @@ describe 'vnet_part::vnet_edge' do
       servers: {}
     }
 
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return('{}')
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('[]')
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return(nil)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return(nil)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).and_return(nil)
+
+    vna_cfg = {
+      id: 'vna1',
+      hwaddr: '02:99:00:01:00:01',
+      datapath_id: '0x00029900010001'
+    }
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
+      .with('cloudconductor/networks/edge1/vna')
+      .and_return(JSON.generate(vna_cfg))
 
     chef_run.converge(described_recipe)
   end
 
   it 'create vna1 resource' do
     chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
+
+    vna_cfg = {
+      id: 'vna1',
+      hwaddr: '02:99:99:01:00:01',
+      datapath_id: '0x00029999010001'
+    }
+
+    expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
+      .with('cloudconductor/networks/edge1/vna')
+      .and_return(JSON.generate(vna_cfg))
+      .once
+
     chef_run.converge(described_recipe)
 
     expect(chef_run).to create_openvnet_vna('vna1').with(
@@ -80,6 +97,18 @@ describe 'vnet_part::vnet_edge' do
 
   it 'create vna2 resource' do
     chef_run.node.set['vnet_part']['node_ref'] = 'edge2'
+
+    vna_cfg = {
+      id: 'vna2',
+      hwaddr: '02:99:99:01:00:02',
+      datapath_id: '0x00029999010002'
+    }
+
+    expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
+      .with('cloudconductor/networks/edge2/vna')
+      .and_return(JSON.generate(vna_cfg))
+      .once
+
     chef_run.converge(described_recipe)
 
     expect(chef_run).to create_openvnet_vna('vna2').with(
@@ -97,40 +126,19 @@ describe 'vnet_part::vnet_edge' do
       chef_run.node.set['cloudconductor']['servers'] = {
         edge1: {
           private_ip: '192.168.0.1',
-          roles: %w(vna vnmgr),
-          vna: {
-            id: 'vna1',
-            hwaddr: '02:99:99:99:01:01',
-            datapath_id: '0x00029999990101'
-          }
+          roles: %w(vna vnmgr)
         },
         edge2: {
           private_ip: '192.168.0.2',
-          roles: 'vna',
-          vna: {
-            id: 'vna2'
-          }
+          roles: 'vna'
         },
         node1: {
           private_ip: '192.168.0.11',
-          roles: 'web',
-          interfaces: {
-            tap1: {
-              type: 'gretap'
-            },
-            tap2: {
-              type: 'bridge'
-            }
-          }
+          roles: 'web'
         },
         node2: {
           private_ip: '192.168.0.12',
-          roles: 'ap',
-          interfaces: {
-            tap3: {
-              type: 'gretap'
-            }
-          }
+          roles: 'ap'
         }
       }
 
@@ -152,14 +160,29 @@ describe 'vnet_part::vnet_edge' do
         remote_address: '192.168.0.11',
         local_address: '192.168.0.1',
         virtual_address: '10.1.0.1'
-      }
+      }.with_indifferent_access
+
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
         .with('cloudconductor/networks/node1/tap1')
         .and_return(JSON.generate(ifcfg))
+        .at_least(:once)
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys)
         .with('cloudconductor/networks/node1/')
         .and_return('["cloudconductor/networks/node1/tap1"]')
+        .once
+
+      ifcfg = {
+        remote_address: '192.168.0.11',
+        local_address: '192.168.0.1',
+        virtual_address: '10.1.0.1',
+        type: 'gretap',
+        port_name: 'tap_0a010001',
+        update: true
+      }.with_indifferent_access
+      expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
+        .with('cloudconductor/networks/node1/tap1', ifcfg)
+        .once
 
       chef_run.converge(described_recipe)
 

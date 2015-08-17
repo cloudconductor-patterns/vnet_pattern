@@ -101,6 +101,8 @@ def configure_interfaces
         action :create
         hostname host_name
         if_name ifname
+        network ifcfg['network']
+        security_groups ifcfg['security_groups']
         virtual_address virtual_addr
       end
     end
