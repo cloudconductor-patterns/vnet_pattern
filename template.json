@@ -25,7 +25,7 @@
       "Type" : "String",
       "Default" : "t2.small"
     },
-    "VNetEdgeImageId" : {
+    "VnmgrVnaImageId" : {
       "Description" : "[computed] VNetEdgeServer Image Id. This parameter is automatically filled by CloudConductor.",
       "Type" : "String"
     },
@@ -68,7 +68,7 @@
         "ClusterAddresses": { "Ref": "ClusterAddresses" }
       },
       "Properties" : {
-        "ImageId" : { "Ref" : "VNetEdgeImageId" },
+        "ImageId" : { "Ref" : "VnmgrVnaImageId" },
         "InstanceType" : { "Ref" : "VNetEdgeInstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
         "NetworkInterfaces" : [{
