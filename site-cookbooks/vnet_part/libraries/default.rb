@@ -57,5 +57,62 @@ module CloudConductor
       Chef::Log.debug "result => #{result}"
       result
     end
+
+    def set_network_current_addr(network, address)
+      node.set['vnet_part']['networks']['networks'][network]['current_addr'] = address
+    end
+
+    def network_conf
+      key = node['vnet_part']['keys']['networks']['base']
+
+      result = node['vnet_part']['networks'].to_hash if node['vnet_part']['networks']
+
+      data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+      result = ::Chef::Mixin::DeepMerge.deep_merge(result, JSON.parse(data)) if data
+
+      node.set['vnet_part']['networks'] = result
+
+      result = {} unless result
+
+      result
+    end
+
+    def load_current_interfaces(svinfo)
+      prefix = "#{node['vnet_part']['keys']['networks']['prefix']}#{svinfo['hostname']}/"
+      data = CloudConductor::ConsulClient::KeyValueStore.keys(prefix)
+      keys = JSON.parse(data) if data
+
+      current_interfaces = {}
+
+      keys.each do |key|
+        ifname = key.slice(Regexp.new("#{prefix}(?<if_name>[^/]*)"), 'if_name')
+        data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+
+        current_interfaces[ifname] = JSON.parse(data) if data
+      end if keys
+
+      current_interfaces
+    end
+
+    def gretap_interfaces(svinfo)
+      new_interfaces = {}
+
+      network_conf['servers'].each do |_name, svcfg|
+        if svcfg['role'] == 'all' || svcfg['role'] == 'default'
+          ::Chef::Mixin::DeepMerge.deep_merge!(svcfg['interfaces'], new_interfaces)
+        end
+        if svcfg['role'] && svinfo['roles'].include?(svcfg['role'])
+          ::Chef::Mixin::DeepMerge.deep_merge!(svcfg['interfaces'], new_interfaces)
+        end
+      end
+
+      new_interfaces.each do |_ifname, ifcfg|
+        ifcfg['update'] = true
+      end
+
+      current_interfaces = load_current_interfaces(svinfo)
+
+      ::Chef::Mixin::DeepMerge.deep_merge(new_interfaces, current_interfaces)
+    end
   end
 end

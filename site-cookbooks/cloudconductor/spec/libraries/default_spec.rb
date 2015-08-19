@@ -47,22 +47,58 @@ describe 'CloudConductor::CommonHelper' do
     Chef::Recipe.new(cookbook_name, 'test', run_context).extend(CloudConductor::CommonHelper)
   end
 
-  it do
-    expect(recipe.server_info('db')).to eql([
-      { 'private_ip' => '192.168.0.1', 'roles' => 'db', 'hostname' => 'sv01' }
-    ])
+  describe 'server_info' do
+    it do
+      expect(recipe.server_info('db')).to eql([
+        { 'private_ip' => '192.168.0.1', 'roles' => 'db', 'hostname' => 'sv01' }
+      ])
+    end
+
+    it do
+      expect(recipe.server_info('web')).to eql([
+        { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' }
+      ])
+    end
+
+    it do
+      expect(recipe.server_info('ap')).to eql([
+        { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' },
+        { 'private_ip' => '192.168.0.3', 'roles' => 'ap', 'hostname' => 'sv03' }
+      ])
+    end
   end
 
-  it do
-    expect(recipe.server_info('web')).to eql([
-      { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' }
-    ])
-  end
+  describe 'patterns' do
+    before do
+      recipe.run_context.node.set['cloudconductor']['patterns'] = {
+        tomcat_pattern: {
+          type: 'platform'
+        },
+        amanda_pattern: {
+          type: 'optional'
+        },
+        vnet_pattern: {
+          type: 'optional'
+        }
+      }
 
-  it do
-    expect(recipe.server_info('ap')).to eql([
-      { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' },
-      { 'private_ip' => '192.168.0.3', 'roles' => 'ap', 'hostname' => 'sv03' }
-    ])
+      recipe.run_context.node.set['cloudconductor']['config']['patterns_dir'] = '/etc/patterns'
+    end
+
+    it 'platform_pattern' do
+      result = { 'type' => 'platform', 'name' => 'tomcat_pattern' }
+      expect(recipe.platform_pattern).to eq(result)
+    end
+
+    it 'optional_patterns' do
+      expect(recipe.optional_patterns).to eq([
+        { 'type' => 'optional', 'name' => 'amanda_pattern' },
+        { 'type' => 'optional', 'name' => 'vnet_pattern' }
+      ])
+    end
+
+    it 'patterns_dir' do
+      expect(recipe.patterns_dir).to eq('/etc/patterns')
+    end
   end
 end

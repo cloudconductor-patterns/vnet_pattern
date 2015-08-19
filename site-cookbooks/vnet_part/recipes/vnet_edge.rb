@@ -10,42 +10,68 @@
 extend CloudConductor::CommonHelper
 extend CloudConductor::VnetPartHelper
 
-vna_conf = host_info['vna']
-
-registry = {
-  host:  '127.0.0.1',
-  port:  6379
-}.with_indifferent_access
-
-sv_vnmgr = server_info('vnmgr').first
-
-registry['host'] = sv_vnmgr['private_ip'] if sv_vnmgr['private_ip'] != host_info['private_ip']
-
-openvnet_vna vna_conf['id'] do
-  hwaddr vna_conf['hwaddr']
-  datapath_id vna_conf['datapath_id']
-  registry registry
+def vna_config(sv_info)
+  key = "cloudconductor/networks/#{sv_info['hostname']}/vna"
+  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+  JSON.parse(data) if data
 end
 
-nodes = all_servers.reject do |_, s|
-  s['roles'].include?('vna') || s['roles'].include?('vnmgr')
+def setup_vna
+  vna_conf = vna_config(host_info)
+
+  registry = {
+    host:  '127.0.0.1',
+    port:  6379
+  }.with_indifferent_access
+
+  sv_vnmgr = server_info('vnmgr').first
+
+  registry['host'] = sv_vnmgr['private_ip'] if sv_vnmgr['private_ip'] != host_info['private_ip']
+
+  openvnet_vna vna_conf['id'] do
+    hwaddr vna_conf['hwaddr']
+    datapath_id vna_conf['datapath_id']
+    registry registry
+  end
 end
 
-host_addr = host_info['private_ip']
+def create_port_name(_svinfo, ifcfg)
+  val = IPAddr.new(ifcfg['virtual_address']).to_i
+  format('tap_%08x', val)
+end
 
-nodes.each do |_hostname, node_info|
-  greports = node_info['interfaces'].select do |_, dev|
-    dev['type'] == 'gretap'
+def create_port(svinfo, ifcfg)
+  local_addr = host_info['private_ip']
+
+  port_name = ifcfg['port_name']
+  port_name ||= create_port_name(svinfo, ifcfg)
+
+  vnet_part_gretap port_name do
+    remote_addr svinfo['private_ip']
+    local_addr local_addr
   end
 
-  greports.each do |port_name, _ifcfg|
-    vnet_part_gretap port_name do
-      remote_addr node_info['private_ip']
-      local_addr host_addr
-    end
+  openvswitch_port port_name do
+    bridge 'br0'
+  end
 
-    openvswitch_port port_name do
-      bridge 'br0'
+  cloudconductor_server_interface "#{svinfo['hostname']}_#{ifcfg['name']}" do
+    hostname svinfo['hostname']
+    if_name ifcfg['name']
+    port_name port_name
+  end
+end
+
+def setup_interfaces
+  node_servers.each do |svinfo|
+    gretap_interfaces(svinfo).each do |ifname, ifcfg|
+      ifcfg['name'] = ifname
+      create_port(svinfo, ifcfg)
     end
   end
+end
+
+if host_info['roles'].include?('vna')
+  setup_vna
+  setup_interfaces
 end
