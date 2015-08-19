@@ -52,9 +52,9 @@ describe 'vnet_part::vnet_dataset' do
       security_groups: {}
     }
 
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return(nil)
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return(nil)
-    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).and_return(nil)
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get).and_return('')
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).and_return('')
 
     vna_cfg = {
       id: 'vna00',

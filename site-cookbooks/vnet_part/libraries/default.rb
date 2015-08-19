@@ -68,7 +68,7 @@ module CloudConductor
       result = node['vnet_part']['networks'].to_hash if node['vnet_part']['networks']
 
       data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-      result = ::Chef::Mixin::DeepMerge.deep_merge(result, JSON.parse(data)) if data
+      result = ::Chef::Mixin::DeepMerge.deep_merge(result, JSON.parse(data)) if data && data.length > 0
 
       node.set['vnet_part']['networks'] = result
 
@@ -80,7 +80,7 @@ module CloudConductor
     def load_current_interfaces(svinfo)
       prefix = "#{node['vnet_part']['keys']['networks']['prefix']}#{svinfo['hostname']}/"
       data = CloudConductor::ConsulClient::KeyValueStore.keys(prefix)
-      keys = JSON.parse(data) if data
+      keys = JSON.parse(data) if data && data.length > 0
 
       current_interfaces = {}
 
@@ -88,7 +88,7 @@ module CloudConductor
         ifname = key.slice(Regexp.new("#{prefix}(?<if_name>[^/]*)"), 'if_name')
         data = CloudConductor::ConsulClient::KeyValueStore.get(key)
 
-        current_interfaces[ifname] = JSON.parse(data) if data
+        current_interfaces[ifname] = JSON.parse(data) if data && data.length > 0
       end if keys
 
       current_interfaces

@@ -43,15 +43,15 @@ describe 'vnet_part::vnet_node' do
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:get)
-      .and_return(nil)
+      .and_return('')
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:keys)
-      .and_return(nil)
+      .and_return('')
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:put)
-      .and_return(nil)
+      .and_return('')
 
     netwrok_conf = {
       networks: {

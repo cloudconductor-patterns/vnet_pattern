@@ -20,7 +20,7 @@ end
 action :create do
   current_info = {}
   data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-  current_info = JSON.parse(data) if data
+  current_info = JSON.parse(data) if data && data.length > 0
 
   new_info = {
     id: new_resource.vna_id,
