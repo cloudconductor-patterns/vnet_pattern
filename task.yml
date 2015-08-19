@@ -34,13 +34,15 @@ events:
     priority: 10
     ordered_tasks:
       - task: prepare
-      - service: vnet_vnmgr
+      - service: vnet-vnmgr
         task: configure_vnet
       - task: configure_nodes
-      - service: vnet_vna
+      - service: vnet-vna
         task: configure_edge
-      - service: vnet_vnmgr
+      - service: vnet-vnmgr
         task: configure_mgr
+      - service: vnet-vna
+        task: start_vna
 
   deploy:
     description: Execute deploy
@@ -64,6 +66,7 @@ events:
 tasks:
   dummy:
     description: Execute dummy
+    service: vnet-vnmgr
     operations:
       - chef:
           run_list:
@@ -71,38 +74,47 @@ tasks:
 
   prepare:
     description: Execute prepare
+    service: vnet-vnmgr
     operations:
       - execute:
           file: prepare.sh
 
   configure_vnet:
     description: Execute configure of vnet
-    service: vnet_vnmgr
+    service: vnet-vnmgr
     operations:
       - chef:
           run_list:
-            - recipe[vnet_part::vnet_configure]
+            - vnet_part::vnet_configure
 
   configure_nodes:
     description: Execute configure of nodes
     operations:
       - chef:
           run_list:
-            - recipe[vnet_part::vnet_node]
+            - vnet_part::vnet_node
 
   configure_edge:
     description: Execute configure of edge
-    service: vnet_vna
+    service: vnet-vna
     operations:
       - chef:
           run_list:
-            - recipe[vnet_part::vnet_edge]
+            - vnet_part::vnet_edge
 
   configure_mgr:
     description: Execute configure of mgr
-    service: vnet_vnmgr
+    service: vnet-vnmgr
     operations:
       - chef:
           run_list:
-            - recipe[vnet_part::vnet_mgr]
-            - recipe[vnet_part::vnet_dataset]
+            - vnet_part::vnet_mgr
+            - vnet_part::vnet_dataset
+
+  start_vna:
+    description: Run vna service
+    service: vnet-vna
+    operations:
+      - execute:
+          script: |
+            initctl start vnet-vna
