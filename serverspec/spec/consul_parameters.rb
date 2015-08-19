@@ -43,7 +43,7 @@ module ConsulParameters
     networks = {}
     begin
       consul_secret_key = ENV['CONSUL_SECRET_KEY'].nil? ? '' : CGI.escape(ENV['CONSUL_SECRET_KEY'])
-      response = Net::HTTP.get URI.parse("http://localhost:8500/v1/kv/cloudconductor/networks?token=#{consul_secret_key}")
+      response = Net::HTTP.get URI.parse("http://localhost:8500/v1/kv/cloudconductor/networks?recurse&token=#{consul_secret_key}")
       response_hash = JSON.parse(response, symbolize_names: true).first
       networks_json = Base64.decode64(response_hash[:Value])
       networks = JSON.parse(networks_json, symbolize_names: true)
