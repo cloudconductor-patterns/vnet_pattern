@@ -112,7 +112,11 @@ module CloudConductor
 
       current_interfaces = load_current_interfaces(svinfo)
 
-      ::Chef::Mixin::DeepMerge.deep_merge(new_interfaces, current_interfaces)
+      result = ::Chef::Mixin::DeepMerge.deep_merge(new_interfaces, current_interfaces)
+
+      result.reject do |ifname, ifcfg|
+        ifname == 'vna'
+      end
     end
   end
 end

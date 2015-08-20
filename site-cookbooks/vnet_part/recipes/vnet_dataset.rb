@@ -113,7 +113,7 @@ def security_groups
     }
 
     sg << cfg
-  end
+  end if network_conf['security_groups']
   sg
 end
 
@@ -132,7 +132,7 @@ def if_security_groups
           security_group_uuid: sg_uuid
         }
         if_sg << cfg
-      end
+      end if ifcfg['security_groups']
     end
   end
 
