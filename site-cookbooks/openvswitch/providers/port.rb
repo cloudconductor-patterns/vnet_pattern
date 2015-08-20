@@ -13,18 +13,36 @@ end
 
 use_inline_resources
 
-action :create do
-  cmd = "ovs-vsctl add-port #{new_resource.bridge} #{new_resource.port}"
+def already_exist?
+  cmdstr = "ovs-vsctl show | grep #{new_resource.port}"
 
+  cmd = Mixlib::ShellOut.new(cmdstr)
+  cmd.run_command
+
+  begin
+    cmd.error!
+    true
+  rescue
+    false
+  end
+end
+
+def delete
+  cmd = "ovs-vsctl del-port #{new_resource.bridge} #{new_resource.port}"
+  execute cmd
+end
+
+action :create do
+  delete if already_exist?
+
+  cmd = "ovs-vsctl add-port #{new_resource.bridge} #{new_resource.port}"
   execute cmd
 
   new_resource.updated_by_last_action(true)
 end
 
 action :delete do
-  cmd = "ovs-vsctl del-port #{new_resource.bridge} #{new_resource.port}"
-
-  execute cmd
+  delete
 
   new_resource.updated_by_last_action(true)
 end

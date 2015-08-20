@@ -25,19 +25,20 @@ def restart(dev)
   down(dev)
   up(dev)
 
-  service 'network' do
-    action :restart
-  end
+#  service 'network' do
+#    action :restart
+#  end
 end
 
 action :create do
   run_context.include_recipe "openvswitch::install_#{node['openvswitch']['install_method']}"
 
   device_name = new_resource.name
+  file_path = "/etc/sysconfig/network-scripts/ifcfg-#{device_name}"
 
   Chef::Log.debug "cookbook: #{new_resource.cookbook_name}"
 
-  template "/etc/sysconfig/network-scripts/ifcfg-#{device_name}" do
+  t = template file_path do
     source 'ifcfg.erb'
     cookbook new_resource.cookbook
     owner 'root'
@@ -51,11 +52,20 @@ action :create do
               ipaddr: new_resource.ipaddr,
               mask: new_resource.mask,
               ovs_extra: new_resource.ovs_extra)
+    action :nothing
   end
 
-  restart device_name
-
-  new_resource.updated_by_last_action(true)
+  if ::File.exist?(file_path)
+    t.run_action(:create)
+    if t.updated_by_last_action?
+      restart device_name
+      new_resource.updated_by_last_action(true)
+    end
+  else
+    t.run_action(:create)
+    up device_name
+    new_resource.updated_by_last_action(true)
+  end
 end
 
 action :down do
