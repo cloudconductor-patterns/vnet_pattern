@@ -1,0 +1,136 @@
+#
+# CloudConductor Pattern:: vnet_pattern
+# Name:: task.yml
+#
+# Copyright 2015, TIS Inc.
+#
+# All rights reserved - Do Not Redistribute
+#
+
+#
+# Environments
+#
+environments:
+  HOME: /root
+  PATH: $PATH:/opt/chefdk/embedded/bin:/opt/chef/embedded/bin:/usr/bin
+  ROLE: '{{config.role}}'
+  CONSUL_SECRET_KEY: '{{config.token}}'
+
+#
+# Variables
+#
+# be defined the key-value map to use in this task.yml file.
+#
+# variables:
+
+#
+# Default
+#
+# be defined the default value of parameters.
+#
+default:
+  timeout: 1800
+
+#
+# Events
+#
+events:
+  setup:
+    description: Execute setup
+    task: dummy
+
+  configure:
+    description: Execute configure
+    priority: 10
+    ordered_tasks:
+      - task: prepare
+      - service: vnet-vnmgr
+        task: configure_vnet
+      - task: configure_nodes
+      - service: vnet-vna
+        task: configure_edge
+      - service: vnet-vnmgr
+        task: configure_mgr
+      - service: vnet-vna
+        task: start_vna
+
+  deploy:
+    description: Execute deploy
+    task: dummy
+
+  backup:
+    description: Execute backup
+    task: dummy
+
+  restore:
+    description: Execute restore
+    task: dummy
+
+  spec:
+    description: Execute spec
+    task: serverspec
+
+#
+# Tasks
+#
+tasks:
+  dummy:
+    description: Execute dummy
+    service: vnet-vnmgr
+    operations:
+      - chef:
+          run_list:
+            - role[{{role}}_dummy]
+
+  prepare:
+    description: Execute prepare
+    service: vnet-vnmgr
+    operations:
+      - execute:
+          file: prepare.sh
+
+  configure_vnet:
+    description: Execute configure of vnet
+    service: vnet-vnmgr
+    operations:
+      - chef:
+          run_list:
+            - recipe[vnet_part::vnet_configure]
+
+  configure_nodes:
+    description: Execute configure of nodes
+    operations:
+      - chef:
+          run_list:
+            - recipe[vnet_part::vnet_node]
+
+  configure_edge:
+    description: Execute configure of edge
+    service: vnet-vna
+    operations:
+      - chef:
+          run_list:
+            - recipe[vnet_part::vnet_edge]
+
+  configure_mgr:
+    description: Execute configure of mgr
+    service: vnet-vnmgr
+    operations:
+      - chef:
+          run_list:
+            - recipe[vnet_part::vnet_mgr]
+            - recipe[vnet_part::vnet_dataset]
+
+  start_vna:
+    description: Run vna service
+    service: vnet-vna
+    operations:
+      - execute:
+          script: |
+            initctl start vnet-vna
+
+  serverspec:
+    description: Execute serverspec
+    operations:
+      - execute:
+          file: run_serverspec.sh {{role}}
