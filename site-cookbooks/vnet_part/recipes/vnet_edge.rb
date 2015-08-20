@@ -37,7 +37,7 @@ end
 
 def create_port_name(_svinfo, ifcfg)
   val = IPAddr.new(ifcfg['virtual_address']).to_i
-  format('tap_%08x', val)
+  "tap#{format('%08x', val).slice(-2, 2)}"
 end
 
 def create_port(svinfo, ifcfg)
