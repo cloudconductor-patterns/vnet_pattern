@@ -8,6 +8,15 @@
 #
 
 #
+# Environments
+#
+environments:
+  HOME: /root
+  PATH: $PATH:/opt/chefdk/embedded/bin:/opt/chef/embedded/bin:/usr/bin
+  ROLE: '{{config.role}}'
+  CONSUL_SECRET_KEY: '{{config.token}}'
+
+#
 # Variables
 #
 # be defined the key-value map to use in this task.yml file.
@@ -18,6 +27,7 @@
 # Default
 #
 # be defined the default value of parameters.
+#
 default:
   timeout: 1800
 
@@ -85,14 +95,14 @@ tasks:
     operations:
       - chef:
           run_list:
-            - vnet_part::vnet_configure
+            - recipe[vnet_part::vnet_configure]
 
   configure_nodes:
     description: Execute configure of nodes
     operations:
       - chef:
           run_list:
-            - vnet_part::vnet_node
+            - recipe[vnet_part::vnet_node]
 
   configure_edge:
     description: Execute configure of edge
@@ -100,7 +110,7 @@ tasks:
     operations:
       - chef:
           run_list:
-            - vnet_part::vnet_edge
+            - recipe[vnet_part::vnet_edge]
 
   configure_mgr:
     description: Execute configure of mgr
@@ -108,8 +118,8 @@ tasks:
     operations:
       - chef:
           run_list:
-            - vnet_part::vnet_mgr
-            - vnet_part::vnet_dataset
+            - recipe[vnet_part::vnet_mgr]
+            - recipe[vnet_part::vnet_dataset]
 
   start_vna:
     description: Run vna service
