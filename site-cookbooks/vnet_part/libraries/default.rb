@@ -114,7 +114,7 @@ module CloudConductor
 
       result = ::Chef::Mixin::DeepMerge.deep_merge(new_interfaces, current_interfaces)
 
-      result.reject do |ifname, ifcfg|
+      result.reject do |ifname, _ifcfg|
         ifname == 'vna'
       end
     end

@@ -24,10 +24,6 @@ end
 def restart(dev)
   down(dev)
   up(dev)
-
-#  service 'network' do
-#    action :restart
-#  end
 end
 
 action :create do
