@@ -177,7 +177,7 @@ describe 'vnet_part::vnet_edge' do
         local_address: '192.168.0.1',
         virtual_address: '10.1.0.1',
         type: 'gretap',
-        port_name: 'tap_0a010001',
+        port_name: 'tap01',
         update: true
       }.with_indifferent_access
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
@@ -186,21 +186,21 @@ describe 'vnet_part::vnet_edge' do
 
       chef_run.converge(described_recipe)
 
-      expect(chef_run).to create_gretap('tap_0a010001').with(
+      expect(chef_run).to create_gretap('tap01').with(
         remote_addr: '192.168.0.11',
         local_addr: '192.168.0.1'
       )
 
-      expect(chef_run).to create_openvswitch_port('tap_0a010001').with(
+      expect(chef_run).to create_openvswitch_port('tap01').with(
         bridge: 'br0'
       )
 
-      expect(chef_run).to run_execute('ovs-vsctl add-port br0 tap_0a010001')
+      expect(chef_run).to run_execute('ovs-vsctl add-port br0 tap01')
 
       expect(chef_run).to create_server_interface('node1_tap1').with(
         hostname: 'node1',
         if_name: 'tap1',
-        port_name: 'tap_0a010001'
+        port_name: 'tap01'
       )
     end
   end

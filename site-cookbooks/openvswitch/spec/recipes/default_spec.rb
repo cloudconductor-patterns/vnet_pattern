@@ -16,10 +16,6 @@ describe 'openvswitch::default' do
     chef_run.converge(described_recipe)
   end
 
-  #  def add_openvswitch(resource_name)
-  #    ChefSpec::Matchers::ResourceMatcher.new(:openvswitch, :add, resource_name)
-  #  end
-
   it 'create OVSBridge' do
     expect(chef_run).to create_openvswitch('br0')
 
@@ -27,7 +23,6 @@ describe 'openvswitch::default' do
 
     expect(chef_run).to create_template('/etc/sysconfig/network-scripts/ifcfg-br0')
 
-    expect(chef_run).to run_execute('ifdown br0')
     expect(chef_run).to run_execute('ifup br0')
   end
 
