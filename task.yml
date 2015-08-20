@@ -126,11 +126,10 @@ tasks:
     service: vnet-vna
     operations:
       - execute:
-          script: |
-            initctl start vnet-vna
+          script: initctl start vnet-vna
 
   serverspec:
     description: Execute serverspec
     operations:
       - execute:
-          file: run_serverspec.sh {{role}}
+          script: run_serverspec.sh {{role}}
