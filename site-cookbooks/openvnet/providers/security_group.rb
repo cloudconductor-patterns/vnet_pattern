@@ -37,9 +37,27 @@ action :create do
   params[:uuid] = new_resource.uuid
   params[:rules] = rules
 
-  VNetAPIClient::SecurityGroup.create(params)
+  ret = VNetAPIClient::SecurityGroup.create(params)
+
+  Chef::Log.debug "create_security_group: #{params}"
+  Chef::Log.debug "create_security_group: #{ret}"
+
+  has_error = false
+  if ret['error']
+    Chef::Log.error "create_security_group: #{params}"
+    Chef::Log.error "create_security_group: #{ret}"
+    has_error = true
+  end
 
   new_resource.interfaces.each do |if_uuid|
-    VNetAPIClient::SecurityGroup.add_interface(new_resource.uuid, if_uuid)
+    ret = VNetAPIClient::SecurityGroup.add_interface(new_resource.uuid, if_uuid)
+
+    Chef::Log.debug "create_security_group: add_interface ret: #{ret}"
+    if ret['error']
+      Chef::Log.error "create_security_group: add_interface ret: #{ret}"
+      has_error = true
+    end
   end if new_resource.interfaces
+
+  new_resource.updated_by_last_action(true) unless has_error
 end

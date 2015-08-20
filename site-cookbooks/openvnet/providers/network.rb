@@ -37,5 +37,15 @@ action :create do
   params[:domain_name] = new_resource.domain_name if new_resource.domain_name
   params[:network_mode] = new_resource.mode if new_resource.mode
 
-  VNetAPIClient::Network.create(params)
+  ret = VNetAPIClient::Network.create(params)
+
+  Chef::Log.debug "create_network: #{params}"
+  Chef::Log.debug "create_network: #{ret}"
+
+  if ret['error']
+    Chef::Log.error "create_network: #{params}"
+    Chef::Log.error "create_network: #{ret}"
+  else
+    new_resource.updated_by_last_action(true)
+  end
 end

@@ -40,5 +40,15 @@ action :create do
   params[:port_name] = new_resource.port_name if new_resource.port_name
   params[:mode] = new_resource.mode if new_resource.mode
 
-  VNetAPIClient::Interface.create(params)
+  ret = VNetAPIClient::Interface.create(params)
+
+  Chef::Log.debug "create_interface: #{params}"
+  Chef::Log.debug "create_interface: #{ret}"
+
+  if ret['error']
+    Chef::Log.error "create_interface: #{params}"
+    Chef::Log.error "create_interface: #{ret}"
+  else
+    new_resource.updated_by_last_action(true)
+  end
 end

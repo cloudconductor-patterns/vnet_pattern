@@ -41,11 +41,11 @@ describe 'openvnet::dataset' do
         interfaces: []
       }
 
-      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return({})
+      allow(VNetAPIClient::Interface).to receive(:create).and_return({})
+      allow(VNetAPIClient::Network).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return({})
 
       chef_run.converge(described_recipe)
     end
@@ -118,11 +118,11 @@ describe 'openvnet::dataset' do
         interfaces: []
       }
 
-      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return({})
+      allow(VNetAPIClient::Interface).to receive(:create).and_return({})
+      allow(VNetAPIClient::Network).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return({})
 
       chef_run.converge(described_recipe)
     end
@@ -188,11 +188,11 @@ describe 'openvnet::dataset' do
         ]
       }
 
-      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return({})
+      allow(VNetAPIClient::Interface).to receive(:create).and_return({})
+      allow(VNetAPIClient::Network).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return({})
 
       chef_run.converge(described_recipe)
     end
@@ -252,11 +252,11 @@ describe 'openvnet::dataset' do
         ]
       }
 
-      allow(VNetAPIClient::Datapath).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Interface).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::Network).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return(nil)
-      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return(nil)
+      allow(VNetAPIClient::Datapath).to receive(:create).and_return({})
+      allow(VNetAPIClient::Interface).to receive(:create).and_return({})
+      allow(VNetAPIClient::Network).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:create).and_return({})
+      allow(VNetAPIClient::SecurityGroup).to receive(:add_interface).and_return({})
 
       chef_run.converge(described_recipe)
     end

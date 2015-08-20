@@ -52,5 +52,15 @@ action :create do
   params[:display_name] = new_resource.display_name if new_resource.display_name
   params[:display_name] = new_resource.uuid unless new_resource.display_name
 
-  VNetAPIClient::Datapath.create(params)
+  ret = VNetAPIClient::Datapath.create(params)
+
+  Chef::Log.debug "create_datapath: #{params}"
+  Chef::Log.debug "create_datapath: #{ret}"
+
+  if ret['error']
+    Chef::Log.error "create_datapath: #{params}"
+    Chef::Log.error "create_datapath: #{ret}"
+  else
+    new_resource.updated_by_last_action(true)
+  end
 end
