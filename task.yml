@@ -68,7 +68,7 @@ events:
 
   spec:
     description: Execute spec
-    task: dummy
+    task: serverspec
 
 #
 # Tasks
@@ -128,3 +128,9 @@ tasks:
       - execute:
           script: |
             initctl start vnet-vna
+
+  serverspec:
+    description: Execute serverspec
+    operations:
+      - execute:
+          file: run_serverspec.sh {{role}}
