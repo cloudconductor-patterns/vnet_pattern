@@ -15,6 +15,7 @@ CONSUL_SECRET_KEY_ENCODED=$(python -c "import urllib; print urllib.quote('${CONS
 app_info=$(curl -s http://localhost:8500/v1/kv/cloudconductor/parameters?raw\&token=${CONSUL_SECRET_KEY_ENCODED} | jq .cloudconductor.applications)
 
 run() {
+  local e E T
   [[ ! "$-" =~ e ]] || e=1
   [[ ! "$-" =~ E ]] || E=1
   [[ ! "$-" =~ T ]] || T=1
@@ -25,7 +26,7 @@ run() {
 
   output="$("$@" 2>&1)"
   status="$?"
-  oldIFS=$IFS
+  local oldIFS=$IFS
   IFS=$'\n' lines=($output)
 
   IFS=$oldIFS
@@ -35,22 +36,28 @@ run() {
 }
 
 execute_serverspec() {
-  role=$1
-  event=$2
+  local roles=($(echo $1 | tr -s ',' ' '))
+  local event=$2
 
-  if [ -f "${spec_dir}/${role}/${role}_${event}_spec.rb" ]; then
-    run sh -c "cd ${test_root}; rake spec['${role}','${event}']"
-    if [ ${status} -ne 0 ]; then
-      echo "${output}" >&2
-      return $status
+  for role in ${roles[@]}; do
+    if [ -f "${spec_dir}/${role}/${role}_${event}_spec.rb" ]; then
+      run sh -c "cd ${test_root}; rake spec['${role}','${event}']"
+      if [ ${status} -ne 0 ]; then
+        echo "${output}" >&2
+        return $status
+      fi
     fi
-  fi
+  done
 }
 
-role=$1
+roles=all,$1
 
-execute_serverspec ${role} configure || exit $?
+if [ "$1" == "" ]; then
+  roles=all,${ROLE}
+fi
+
+execute_serverspec ${roles} configure || exit $?
 
 if [ "${app_info}" != "null" ];then
-  execute_serverspec ${role} deploy || exit $?
+  execute_serverspec ${roles} deploy || exit $?
 fi
