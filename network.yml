@@ -2,8 +2,8 @@
 # networks
 networks:
   vnet1:
-    ipv4-address: 10.1.0.0
-    ipv4-prefix: 24
+    ipv4_address: 10.11.0.0
+    ipv4_prefix: 24
     mode: virtual
 
 
@@ -15,7 +15,7 @@ servers:
       tap1:
         type: gretap
         network: vnet1
-        sequrity-groups:
+        sequrity_groups:
           - sg-shared
   edge-server:
     role: vna
