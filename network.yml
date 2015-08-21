@@ -15,14 +15,14 @@ servers:
       tap1:
         type: gretap
         network: vnet1
-        sequrity_groups:
+        security_groups:
           - sg-shared
   edge-server:
     role: vna
 
 
-# sequrity_groups:
-sequrity_groups:
+# security_groups:
+security_groups:
   sg-shared:
     rules:
       - tcp:22:0.0.0.0/0
