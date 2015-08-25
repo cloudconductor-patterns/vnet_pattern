@@ -126,7 +126,11 @@ tasks:
     service: vnet-vna
     operations:
       - execute:
-          script: initctl start vnet-vna
+          script: |
+            initctl status vnet-vna | grep running
+            if [ $? -ne 0 ]; then
+              initctl start vnet-vna
+            fi
 
   serverspec:
     description: Execute serverspec
