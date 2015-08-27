@@ -48,6 +48,15 @@ describe 'CloudConductor::CommonHelper' do
   end
 
   describe 'server_info' do
+    it 'empty' do
+      recipe.run_context.node.set['cloudconductor']['servers'] = nil
+      expect(recipe.server_info('db')).to eql([])
+    end
+
+    it 'not exist' do
+      expect(recipe.server_info('hoge')).to eql([])
+    end
+
     it do
       expect(recipe.server_info('db')).to eql([
         { 'private_ip' => '192.168.0.1', 'roles' => 'db', 'hostname' => 'sv01' }
@@ -68,6 +77,90 @@ describe 'CloudConductor::CommonHelper' do
     end
   end
 
+  describe 'all_servers' do
+    it 'empty' do
+      recipe.run_context.node.set['cloudconductor'] = nil
+      expect(recipe.all_servers).to eql({})
+
+      recipe.run_context.node.set['cloudconductor'] = {}
+      expect(recipe.all_servers).to eql({})
+
+      recipe.run_context.node.set['cloudconductor']['servers'] = nil
+      expect(recipe.all_servers).to eql({})
+
+      recipe.run_context.node.set['cloudconductor']['servers'] = {}
+      expect(recipe.all_servers).to eql({})
+    end
+
+    it do
+      result = {
+        'sv01' => { 'private_ip' => '192.168.0.1', 'roles' => 'db' },
+        'sv02' => { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap' },
+        'sv03' => { 'private_ip' => '192.168.0.3', 'roles' => 'ap' }
+      }
+      expect(recipe.all_servers).to eql(result)
+    end
+  end
+
+  describe 'servers' do
+    it 'empty' do
+      recipe.run_context.node.set['cloudconductor']['servers'] = nil
+      expect(recipe.servers('db')).to eql({})
+    end
+
+    it 'not exist' do
+      expect(recipe.servers('hoge')).to eql({})
+    end
+
+    it do
+      result = {
+        'sv01' => { 'private_ip' => '192.168.0.1', 'roles' => 'db' }
+      }
+      expect(recipe.servers('db')).to eql(result)
+    end
+
+    it do
+      result = {
+        'sv02' => { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap' }
+      }
+      expect(recipe.servers('web')).to eql(result)
+    end
+
+    it do
+      result = {
+        'sv02' => { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap' },
+        'sv03' => { 'private_ip' => '192.168.0.3', 'roles' => 'ap' }
+      }
+      expect(recipe.servers('ap')).to eql(result)
+    end
+  end
+
+  describe 'host_info' do
+    it 'not exist' do
+      recipe.run_context.node.set['hostname'] = 'sv99'
+      expect(recipe.host_info).to eql({})
+    end
+
+    it do
+      recipe.run_context.node.set['hostname'] = 'sv02'
+      result = { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' }
+      expect(recipe.host_info).to eql(result)
+    end
+  end
+
+  describe 'host_at_name' do
+    it 'not exist' do
+      expect(recipe.host_at_name('sv99')).to eql({})
+    end
+
+    it do
+      result = {
+        'sv01' => { 'private_ip' => '192.168.0.1', 'roles' => 'db' }
+      }
+      expect(recipe.host_at_name('sv01')).to eql(result)
+    end
+  end
+
   describe 'patterns' do
     before do
       recipe.run_context.node.set['cloudconductor']['patterns'] = {
@@ -85,16 +178,78 @@ describe 'CloudConductor::CommonHelper' do
       recipe.run_context.node.set['cloudconductor']['config']['patterns_dir'] = '/etc/patterns'
     end
 
-    it 'platform_pattern' do
-      result = { 'type' => 'platform', 'name' => 'tomcat_pattern' }
-      expect(recipe.platform_pattern).to eq(result)
+    describe 'platform_pattern' do
+      it 'empty' do
+        recipe.run_context.node.set['cloudconductor']['patterns'] = nil
+        expect(recipe.platform_pattern).to eql({})
+      end
+
+      it do
+        result = { 'type' => 'platform', 'name' => 'tomcat_pattern' }
+        expect(recipe.platform_pattern).to eq(result)
+      end
     end
 
-    it 'optional_patterns' do
-      expect(recipe.optional_patterns).to eq([
-        { 'type' => 'optional', 'name' => 'amanda_pattern' },
-        { 'type' => 'optional', 'name' => 'vnet_pattern' }
-      ])
+    describe 'optional_patterns' do
+      it 'empty' do
+        recipe.run_context.node.set['cloudconductor']['patterns'] = nil
+        expect(recipe.optional_patterns).to eq([])
+      end
+
+      it do
+        expect(recipe.optional_patterns).to eq([
+          { 'type' => 'optional', 'name' => 'amanda_pattern' },
+          { 'type' => 'optional', 'name' => 'vnet_pattern' }
+        ])
+      end
+    end
+
+    describe 'all_patterns' do
+      it 'empty' do
+        recipe.run_context.node.set['cloudconductor'] = nil
+        expect(recipe.all_patterns).to eql({})
+
+        recipe.run_context.node.set['cloudconductor'] = {}
+        expect(recipe.all_patterns).to eql({})
+
+        recipe.run_context.node.set['cloudconductor']['patterns'] = nil
+        expect(recipe.all_patterns).to eql({})
+      end
+
+      it do
+        result = {
+          'tomcat_pattern' => { 'type' => 'platform' },
+          'amanda_pattern' => { 'type' => 'optional' },
+          'vnet_pattern' => { 'type' => 'optional' }
+        }
+        expect(recipe.all_patterns).to eql(result)
+      end
+    end
+
+    describe 'patterns' do
+      it 'empty' do
+        recipe.run_context.node.set['cloudconductor']['patterns'] = nil
+        expect(recipe.patterns('hoge')).to eql({})
+      end
+
+      it do
+        expect(recipe.patterns('hoge')).to eql({})
+      end
+
+      it do
+        result = {
+          'tomcat_pattern' => { 'type' => 'platform' }
+        }
+        expect(recipe.patterns('platform')).to eql(result)
+      end
+
+      it do
+        result = {
+          'amanda_pattern' => { 'type' => 'optional' },
+          'vnet_pattern' => { 'type' => 'optional' }
+        }
+        expect(recipe.patterns('optional')).to eql(result)
+      end
     end
 
     it 'patterns_dir' do

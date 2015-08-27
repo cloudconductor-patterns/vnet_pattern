@@ -7,18 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
-extend CloudConductor::CommonHelper
 extend CloudConductor::VnetPartHelper
 
-def platform_pattern_path
-  name = platform_pattern['name']
-  pattern_path(name)
-end
-
 def optional_pattern_names
-  patterns = optional_patterns
-
-  patterns = patterns.reject do |info|
+  patterns = optional_patterns.reject do |info|
     info['name'] == 'vnet_pattern'
   end
 
@@ -29,24 +21,41 @@ def optional_pattern_names
   result
 end
 
-def pattern_path(pattern_name)
-  File.join(patterns_dir, pattern_name)
-end
-
-# load network.conf
 #
-def load_network_conf
-  network_conf = YAML.load_file(File.join(pattern_path('vnet_pattern'), 'network.yml'))
+# load network.yml files
+#   vnet_pattern < platform < optional
+#
+def load_network_yml
+  new_cfg = YAML.load_file(File.join(pattern_path('vnet_pattern'), 'network.yml'))
 
   yml_file = File.join(platform_pattern_path, 'network.yml')
-  network_conf = ::Chef::Mixin::DeepMerge.deep_merge(YAML.load_file(yml_file), network_conf) if File.exist?(yml_file)
+  new_cfg = ::Chef::Mixin::DeepMerge.deep_merge(YAML.load_file(yml_file), new_cfg) if File.exist?(yml_file)
 
   optional_pattern_names.each do |name|
     yml_file = File.join(pattern_path(name), 'network.yml')
-    network_conf = ::Chef::Mixin::DeepMerge.deep_merge(YAML.load_file(yml_file), network_conf) if File.exist?(yml_file)
+    new_cfg = ::Chef::Mixin::DeepMerge.deep_merge(YAML.load_file(yml_file), new_cfg) if File.exist?(yml_file)
   end
 
-  network_conf
+  new_cfg.with_indifferent_access
+end
+
+# load network.conf
+# consul < file < attributes
+#
+# consul key:= cloudconductor/networks/base
+# file:= network.yml
+#   vnet_pattern < platform < optional
+# attributes vnet_part::networks
+#
+def load_network_conf
+  current_cfg = networks_base
+
+  new_cfg = load_network_yml
+
+  attributes_cfg = node['vnet_part']['networks'].to_hash if node['vnet_part']['networks']
+  new_cfg = ::Chef::Mixin::DeepMerge.deep_merge(attributes_cfg, new_cfg) if attributes_cfg
+
+  ::Chef::Mixin::DeepMerge.deep_merge(new_cfg, current_cfg)
 end
 
 # add vna-id to vna server
@@ -65,17 +74,10 @@ def configure_vna
   end
 end
 
-def virtual_address(network_name)
-  nwcfg = network_conf['networks'][network_name]
-
-  network_addr = nwcfg['ipv4_address']
-  network_addr ||= node['vnet_part']['config']['network']['virtual']['addr']
-
-  network_prefix = nwcfg['ipv4_prefix']
-  network_prefix ||= node['vnet_part']['config']['network']['virtual']['mask']
-
-  current_addr = nwcfg['current_addr']
-  current_addr ||= network_addr
+def next_vaddr(network_name)
+  network_addr = network_address(network_name)
+  network_prefix = network_prefix(network_name)
+  current_addr = current_address(network_name)
 
   addr = IPAddr.new(current_addr).succ
   nw = IPAddr.new(network_addr).mask(network_prefix)
@@ -88,14 +90,17 @@ def virtual_address(network_name)
   ret
 end
 
+def virtual_address(ifcfg)
+  ifcfg['virtual_address'] || next_vaddr(ifcfg['network'])
+end
+
 # add interface-id to nodes
 #
 def configure_interfaces
   node_servers.each do |svinfo|
     gretap_interfaces(svinfo).each do |ifname, ifcfg|
       host_name = svinfo['hostname']
-      virtual_addr = ifcfg['virtual_address']
-      virtual_addr ||= virtual_address(ifcfg['network'])
+      virtual_addr = virtual_address(ifcfg)
 
       cloudconductor_server_interface "#{host_name}_#{ifname}" do
         action :create
@@ -113,10 +118,10 @@ if host_info['roles'].include?('vnmgr')
   conf = load_network_conf
   node.set['vnet_part']['networks'] = conf
 
-  key = node['vnet_part']['keys']['networks']['base']
-  CloudConductor::ConsulClient::KeyValueStore.put(key, conf)
-
   configure_vna
 
   configure_interfaces
+
+  key = node['vnet_part']['keys']['networks']['base']
+  CloudConductor::ConsulClient::KeyValueStore.put(key, conf)
 end

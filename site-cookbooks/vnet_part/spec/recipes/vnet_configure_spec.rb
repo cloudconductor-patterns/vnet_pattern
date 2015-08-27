@@ -340,6 +340,10 @@ describe 'vnet_part::vnet_configure' do
 
       chef_run.converge(described_recipe)
 
+      nwcfg = nwcfg_tomcat.with_indifferent_access
+      nwcfg['networks']['vnet2']['current_addr'] = '10.20.0.1'
+      expect(chef_run.node['vnet_part']['networks']).to eql(nwcfg)
+
       expect(chef_run).to_not create_server_interface('node1_tap1')
 
       expect(chef_run).to create_server_interface('node1_tap2').with(

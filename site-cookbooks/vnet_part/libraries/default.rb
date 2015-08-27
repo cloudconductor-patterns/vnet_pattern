@@ -9,38 +9,25 @@
 
 module CloudConductor
   module VnetPartHelper
-    def node_servers
-      servers = all_servers.reject do |_, s|
+    include CloudConductor::CommonHelper
+
+    def sv_nodes
+      all_servers.reject do |_, s|
         s['roles'].include?('vna') || s['roles'].include?('vnmgr')
       end
+    end
 
-      result = servers.map do |hostname, server_info|
+    def node_servers
+      sv_nodes.map do |hostname, server_info|
         server_info['hostname'] = hostname
         server_info.with_indifferent_access
       end
-      result
     end
 
-    def find_server_from_name(hostname)
-      result = {}
-      result = node['cloudconductor']['servers'][hostname].to_hash if node['cloudconductor']['servers'][hostname]
-      result['hostname'] = hostname
-
-      result
-    end
-
-    def find_server_from_ipaddress(ipaddress)
-      all_servers = node['cloudconductor']['servers']
-      servers = all_servers.to_hash.select do |_, v|
+    def host_at_ipaddress(ipaddress)
+      all_servers.select do |_, v|
         v['private_ip'] == ipaddress
       end
-
-      result = servers.map do |hostname, info|
-        info['hostname'] = hostname
-        info
-      end
-
-      result.first
     end
 
     def host_info
@@ -50,10 +37,18 @@ module CloudConductor
       if node['vnet_part']['node_ref']
         node_name = node['vnet_part']['node_ref']
 
-        result = find_server_from_name(node_name)
+        result = host_at_name(node_name)
       else
-        result = find_server_from_ipaddress(node['ipaddress'])
+        result = host_at_ipaddress(node['ipaddress'])
       end
+
+      result = result.map do |hostname, server_info|
+        server_info['hostname'] = hostname
+        server_info.with_indifferent_access
+      end
+      result = result.first
+      result ||= {}
+
       Chef::Log.debug "result => #{result}"
       result
     end
@@ -62,19 +57,45 @@ module CloudConductor
       node.set['vnet_part']['networks']['networks'][network]['current_addr'] = address
     end
 
-    def network_conf
+    def networks_base
       key = node['vnet_part']['keys']['networks']['base']
-
-      result = node['vnet_part']['networks'].to_hash if node['vnet_part']['networks']
-
       data = CloudConductor::ConsulClient::KeyValueStore.get(key)
       result = ::Chef::Mixin::DeepMerge.deep_merge(result, JSON.parse(data)) if data && data.length > 0
+      result || {}
+    end
+
+    #
+    # consul < attributes
+    def network_conf
+      result = node['vnet_part']['networks'].to_hash if node['vnet_part']['networks']
+
+      result = ::Chef::Mixin::DeepMerge.deep_merge(result, networks_base)
 
       node.set['vnet_part']['networks'] = result
 
-      result = {} unless result
+      result || {}
+    end
 
-      result
+    def network_address(network_name)
+      nwcfg = network_conf['networks'][network_name]
+      nwcfg['ipv4_address'] || node['vnet_part']['config']['network']['virtual']['addr']
+    end
+
+    def network_prefix(network_name)
+      nwcfg = network_conf['networks'][network_name]
+      nwcfg['ipv4_prefix'] || node['vnet_part']['config']['network']['virtual']['mask']
+    end
+
+    def current_address(network_name)
+      nwcfg = network_conf['networks'][network_name]
+      nwcfg['current_addr'] || network_address(network_name)
+    end
+
+    def vna_config(hostname)
+      key = "cloudconductor/networks/#{hostname}/vna"
+      data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+      result = JSON.parse(data) if data && data.length > 0
+      result || {}
     end
 
     def load_current_interfaces(svinfo)

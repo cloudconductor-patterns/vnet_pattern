@@ -39,23 +39,35 @@ module ConsulParameters
     servers
   end
 
+  def kvs_keys(prefix)
+    consul_secret_key = ENV['CONSUL_SECRET_KEY'].nil? ? '' : CGI.escape(ENV['CONSUL_SECRET_KEY'])
+    response = Net::HTTP.get URI.parse("http://localhost:8500/v1/kv/#{prefix}?keys&token=#{consul_secret_key}")
+    ret = JSON.parse(response, symbolize_names: true)
+    ret || []
+  end
+
+  def kvs_get(key)
+    consul_secret_key = ENV['CONSUL_SECRET_KEY'].nil? ? '' : CGI.escape(ENV['CONSUL_SECRET_KEY'])
+    response = Net::HTTP.get URI.parse("http://localhost:8500/v1/kv/#{key}?raw&token=#{consul_secret_key}")
+    ret = JSON.parse(response, symbolize_names: true)
+    ret || {}
+  end
+
   def read_networks
     networks = {}
     begin
-      consul_secret_key = ENV['CONSUL_SECRET_KEY'].nil? ? '' : CGI.escape(ENV['CONSUL_SECRET_KEY'])
-      response = Net::HTTP.get URI.parse("http://localhost:8500/v1/kv/cloudconductor/networks?recurse&token=#{consul_secret_key}")
-      JSON.parse(response, symbolize_names: true).each do |response_hash|
-        key = response_hash[:Key]
+      kvs_keys('cloudconductor/networks/').each do |key|
         next if key == 'cloudconductor/networks'
-        hostname = key.slice(%r{cloudconductor/networks/(?<hostname>[^/]*)}, 'hostname')
-        network_info_json = Base64.decode64(response_hash[:Value])
+        hostname = key.slice(%r{#{prefix}/(?<hostname>[^/]*)}, 'hostname')
         if hostname == 'base'
-          networks['base'] = JSON.parse(network_info_json, symbolize_names: true)
-        else
-          portname = key.slice(%r{cloudconductor/networks/#{hostname}/(?<portname>[^/]*)}, 'portname')
-          networks[hostname] ||= {}
-          networks[hostname][portname] = JSON.parse(network_info_json, symbolize_names: true)
+          data = kvs_get(key)
+          networks['base'] = data
+          next
         end
+        ifname = key.slice(%r{#{prefix}/#{hostname}/(?<ifname>[^/]*)}, 'ifname')
+        data = kvs_get(key)
+        networks[hostname] ||= {}
+        networks[hostname][ifname] = data
       end
     rescue => exception
       p exception.message

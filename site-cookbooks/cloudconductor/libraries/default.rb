@@ -19,18 +19,10 @@ require 'active_support/core_ext'
 module CloudConductor
   module CommonHelper
     def server_info(role)
-      if node['cloudconductor'] && node['cloudconductor']['servers']
-        servers = node['cloudconductor']['servers'].to_hash.select do |_, s|
-          s['roles'].include?(role)
-        end
-        result = servers.map do |hostname, server_info|
-          server_info['hostname'] = hostname
-          server_info.with_indifferent_access
-        end
-      else
-        result = []
+      servers(role).map do |hostname, server_info|
+        server_info['hostname'] = hostname
+        server_info.with_indifferent_access
       end
-      result
     end
 
     def all_servers
@@ -42,54 +34,66 @@ module CloudConductor
       result
     end
 
-    def host_info
-      if node['cloudconductor'] && node['cloudconductor']['servers']
-        servers = node['cloudconductor']['servers'].to_hash.select do |hostname, _info|
-          hostname == node['hostname']
-        end
-        result = servers.map do |hostname, server_info|
-          server_info['hostname'] = hostname
-          server_info.with_indifferent_access
-        end
-      else
-        result = []
+    def servers(role)
+      all_servers.select do |_, s|
+        s['roles'].include?(role)
       end
-      result
+    end
+
+    def host_info
+      result = host_at_name(node['hostname']).map do |hostname, server_info|
+        server_info['hostname'] = hostname
+        server_info.with_indifferent_access
+      end
+      result.first || {}
+    end
+
+    def host_at_name(name)
+      all_servers.select do |hostname, _info|
+        hostname == name
+      end
     end
 
     def platform_pattern
+      result = patterns('platform').map do |name, info|
+        info['name'] = name
+        info.with_indifferent_access
+      end
+      result.first || {}
+    end
+
+    def optional_patterns
+      patterns('optional').map do |name, info|
+        info['name'] = name
+        info.with_indifferent_access
+      end
+    end
+
+    def all_patterns
       if node['cloudconductor'] && node['cloudconductor']['patterns']
-        patterns = node['cloudconductor']['patterns'].to_hash.select do |_, info|
-          info['type'] == 'platform'
-        end
-        result = patterns.map do |name, info|
-          info['name'] = name
-          info.with_indifferent_access
-        end
-        result = result.first
+        result = node['cloudconductor']['patterns'].to_hash
       else
         result = {}
       end
       result
     end
 
-    def optional_patterns
-      if node['cloudconductor'] && node['cloudconductor']['patterns']
-        patterns = node['cloudconductor']['patterns'].to_hash.select do |_, info|
-          info['type'] == 'optional'
-        end
-        result = patterns.map do |name, info|
-          info['name'] = name
-          info.with_indifferent_access
-        end
-      else
-        result = []
+    def patterns(type)
+      all_patterns.select do |_, info|
+        info['type'] == type
       end
-      result
     end
 
     def patterns_dir
       node['cloudconductor']['config']['patterns_dir']
+    end
+
+    def pattern_path(pattern_name)
+      File.join(patterns_dir, pattern_name)
+    end
+
+    def platform_pattern_path
+      pattern_path(platform_pattern['name'])
     end
   end
 end

@@ -10,6 +10,7 @@
 require_relative '../spec_helper'
 require_relative '../../../cloudconductor/libraries/consul_helper'
 require_relative '../../../cloudconductor/libraries/consul_helper_kv'
+require_relative '../../../cloudconductor/libraries/default'
 require_relative '../../libraries/default'
 
 describe 'CloudConductor::VnetPartHelper' do
@@ -55,9 +56,16 @@ describe 'CloudConductor::VnetPartHelper' do
     end
 
     it do
+      recipe.run_context.node.set['ipaddress'] = '192.168.0.3'
+      recipe.run_context.node.set['hostname'] = 'node04'
+      ret = {}
+      expect(recipe.host_info).to eql(ret)
+    end
+
+    it do
       recipe.run_context.node.set['vnet_part']['node_ref'] = 'node03'
 
-      ret = { 'hostname' => 'node03' }
+      ret = {}
 
       expect(recipe.host_info).to eql(ret)
     end
@@ -71,6 +79,30 @@ describe 'CloudConductor::VnetPartHelper' do
     end
   end
 
+  describe 'networks_base' do
+    it do
+      data = {
+        networks: {
+          vnet1: {
+            name: 'vnet1'
+          }
+        }
+      }
+      expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
+        .with('cloudconductor/networks/base')
+        .and_return(JSON.generate(data))
+
+      result = {
+        'networks' => {
+          'vnet1' => {
+            'name' => 'vnet1'
+          }
+        }
+      }
+      expect(recipe.networks_base).to eq(result)
+    end
+  end
+
   describe 'network_conf' do
     it do
       recipe.run_context.node.set['vnet_part']['networks'] = nil
@@ -78,7 +110,7 @@ describe 'CloudConductor::VnetPartHelper' do
 
       expect(recipe.network_conf).to eq({})
 
-      expect(recipe.run_context.node['vnet_part']['networks']).to eq(nil)
+      expect(recipe.run_context.node['vnet_part']['networks']).to eq({})
     end
 
     it do
@@ -103,6 +135,8 @@ describe 'CloudConductor::VnetPartHelper' do
 
       result = { 'networks' => { 'vnet1' => { 'name' => 'vnet1' } } }
       expect(recipe.network_conf).to eq(result)
+
+      expect(recipe.run_context.node['vnet_part']['networks']).to eq(result)
     end
 
     it do
@@ -113,6 +147,8 @@ describe 'CloudConductor::VnetPartHelper' do
 
       result = { 'networks' => { 'vnet1' => { 'name' => 'vnet1' } } }
       expect(recipe.network_conf).to eq(result)
+
+      expect(recipe.run_context.node['vnet_part']['networks']).to eq(result)
     end
 
     it do

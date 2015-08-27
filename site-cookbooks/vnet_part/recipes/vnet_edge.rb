@@ -7,17 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
-extend CloudConductor::CommonHelper
 extend CloudConductor::VnetPartHelper
 
-def vna_config(sv_info)
-  key = "cloudconductor/networks/#{sv_info['hostname']}/vna"
-  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-  JSON.parse(data) if data
-end
-
 def setup_vna
-  vna_conf = vna_config(host_info)
+  vna_conf = vna_config(host_info['hostname'])
 
   registry = {
     host:  '127.0.0.1',

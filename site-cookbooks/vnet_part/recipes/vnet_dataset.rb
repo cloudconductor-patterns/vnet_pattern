@@ -7,25 +7,17 @@
 # All rights reserved - Do Not Redistribute
 #
 
-extend CloudConductor::CommonHelper
 extend CloudConductor::VnetPartHelper
 
 def datapath_uuid(vna_conf)
   "dp-#{vna_conf['datapath_id'].slice(-2, 2)}"
 end
 
-def vna_config(sv_info)
-  key = "cloudconductor/networks/#{sv_info['hostname']}/vna"
-  data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-
-  JSON.parse(data) if data
-end
-
 def datapaths
   result = []
 
   server_info('vna').each do |sv_info|
-    vna_conf = vna_config(sv_info)
+    vna_conf = vna_config(sv_info['hostname'])
 
     cfg = {
       uuid: datapath_uuid(vna_conf),
@@ -79,7 +71,7 @@ end
 def interfaces
   result = []
 
-  dp_uuid = datapath_uuid(vna_config(vna_sv))
+  dp_uuid = datapath_uuid(vna_config(vna_sv['hostname']))
 
   node_servers.each do |svinfo|
     gretap_interfaces(svinfo).each do |_ifname, ifcfg|
