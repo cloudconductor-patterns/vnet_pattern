@@ -72,7 +72,7 @@ describe 'vnet_part::vnet_configure' do
       .with("#{patterns_dir}/tomcat_pattern/network.yml")
       .and_return(nwcfg_tomcat)
 
-    #    chef_run.converge(described_recipe)
+    allow(File).to receive(:exist?).and_return(true)
   end
 
   def create_vnet_edge(resource_name)
