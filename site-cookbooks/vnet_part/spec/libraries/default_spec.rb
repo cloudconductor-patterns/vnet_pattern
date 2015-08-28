@@ -177,7 +177,7 @@ describe 'CloudConductor::VnetPartHelper' do
         .with('cloudconductor/networks/base')
         .and_return(JSON.generate(network_conf))
 
-      result =  {
+      result = {
         'networks' => {
           'vnet1' => { 'name' => 'vnet1', 'ipv4_address' => '10.1.0.0' },
           'vnet2' => { 'name' => 'vnet2', 'ipv4_address' => '192.168.20.0' },
