@@ -1,9 +1,0 @@
-{
-  "name" : "vna_configure",
-  "description" : "Virtual-Network configure event role",
-  "chef_type" : "role",
-  "json_class" :"Chef::Role",
-  "run_list" : [
-    "recipe[vnet_part::vnet_edge]"
-  ]
-}
