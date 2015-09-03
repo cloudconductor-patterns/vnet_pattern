@@ -7,4 +7,5 @@
 # All rights reserved - Do Not Redistribute
 #
 
-default['openvswitch']['install_method'] = 'package'
+default['openvswitch']['install_method'] = 'source'
+default['openvswitch']['version'] = '2.4.0'
