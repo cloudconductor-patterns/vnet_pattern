@@ -21,6 +21,10 @@ describe 'CloudConductor::CommonHelper' do
     File.basename(cookbook_root)
   end
 
+  def patterns_dir
+    File.expand_path('../../../', File.dirname(__FILE__))
+  end
+
   let(:recipe) do
     cookbook_version = Chef::CookbookVersion.new(cookbook_name, cookbook_root)
     cookbook_versions = { cookbook_name => cookbook_version }
@@ -177,7 +181,11 @@ describe 'CloudConductor::CommonHelper' do
         }
       }
 
-      recipe.run_context.node.set['cloudconductor']['config']['patterns_dir'] = '/etc/patterns'
+      recipe.run_context.node.set['cloudconductor']['config']['patterns_dir'] = patterns_dir
+
+      allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys)
+        .with('cloudconductor/patterns/', '/').and_return('[]')
+
     end
 
     describe 'platform_pattern' do
@@ -231,6 +239,10 @@ describe 'CloudConductor::CommonHelper' do
     describe 'patterns' do
       it 'empty' do
         recipe.run_context.node.set['cloudconductor']['patterns'] = nil
+        expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys)
+          .with('cloudconductor/patterns/', '/')
+          .and_return('[]')
+
         expect(recipe.patterns('hoge')).to eql({})
       end
 
@@ -254,8 +266,49 @@ describe 'CloudConductor::CommonHelper' do
       end
     end
 
+    describe 'load_patterns_info' do
+      before do
+        recipe.run_context.node.set['cloudconductor']['patterns'] = nil
+      end
+
+      it do
+        expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys)
+          .with('cloudconductor/patterns/', '/')
+          .and_return('["cloudconductor/patterns/tomcat_pattern/", "cloudconductor/patterns/amanda_pattern/", "cloudconductor/patterns/vnet_pattern/"]')
+
+        tomcat_pattern = {
+          type: 'platform'
+        }
+        allow(YAML).to receive(:load_file).with("#{patterns_dir}/tomcat_pattern/metadata.yml")
+          .and_return(tomcat_pattern)
+
+        amanda_pattern = {
+          type: 'optional'
+        }
+        allow(YAML).to receive(:load_file).with("#{patterns_dir}/amanda_pattern/metadata.yml")
+          .and_return(amanda_pattern)
+
+        vnet_pattern = {
+          type: 'optional'
+        }
+        allow(YAML).to receive(:load_file).with("#{patterns_dir}/vnet_pattern/metadata.yml")
+          .and_return(vnet_pattern)
+
+        recipe.load_patterns_info
+
+        result = {
+          'tomcat_pattern' => { 'type' => 'platform' },
+          'amanda_pattern' => { 'type' => 'optional' },
+          'vnet_pattern' => { 'type' => 'optional' }
+        }
+        expect(recipe.run_context.node['cloudconductor']['patterns']).to eql(result)
+
+        expect(recipe.all_patterns).to eql(result)
+      end
+    end
+
     it 'patterns_dir' do
-      expect(recipe.patterns_dir).to eq('/etc/patterns')
+      expect(recipe.patterns_dir).to eq(patterns_dir)
     end
   end
 

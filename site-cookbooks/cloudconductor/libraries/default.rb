@@ -69,7 +69,24 @@ module CloudConductor
       end
     end
 
+    def load_patterns_info
+      new_info = {}
+      keys = []
+
+      data = CloudConductor::ConsulClient::KeyValueStore.keys('cloudconductor/patterns/', '/')
+      keys = JSON.parse(data) if data && data.length
+
+      keys.each do |key|
+        name = key.slice(%r{cloudconductor/patterns/(?<name>[^/]*)}, 'name')
+        new_info[name] = YAML.load_file(File.join(patterns_dir, name, 'metadata.yml'))
+      end
+
+      node.set['cloudconductor']['patterns'] = new_info if node['cloudconductor']
+    end
+
     def all_patterns
+      load_patterns_info unless node['cloudconductor'] && node['cloudconductor']['patterns']
+
       if node['cloudconductor'] && node['cloudconductor']['patterns']
         result = node['cloudconductor']['patterns'].to_hash
       else

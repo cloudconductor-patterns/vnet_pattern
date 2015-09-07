@@ -21,8 +21,10 @@ module CloudConductor
           response.body
         end
 
-        def keys(key)
-          response = ConsulClient.http.get ConsulClient.request_url("kv/#{key}?keys")
+        def keys(key, separator = nil)
+          url = "kv/#{key}?keys"
+          url << "&separator=#{separator}" if separator
+          response = ConsulClient.http.get ConsulClient.request_url(url)
 
           response.body
         end
