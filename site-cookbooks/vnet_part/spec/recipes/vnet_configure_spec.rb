@@ -358,7 +358,7 @@ describe 'vnet_part::vnet_configure' do
         networks: {
           vnet1: {},
           vnet2: {
-            ipv4_address: '10.20.0.0'
+            ipv4_network: '10.20.0.0'
           }
         },
         servers: {

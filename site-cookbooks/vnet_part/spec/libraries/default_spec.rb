@@ -174,8 +174,8 @@ describe 'CloudConductor::VnetPartHelper' do
     it do
       recipe.run_context.node.set['vnet_part']['networks'] = {
         'networks' => {
-          'vnet1' => { 'name' => 'vnet1', 'ipv4_address' => '10.1.0.0' },
-          'vnet3' => { 'name' => 'vnet3', 'ipv4_address' => '10.3.0.0' }
+          'vnet1' => { 'name' => 'vnet1', 'ipv4_network' => '10.1.0.0' },
+          'vnet3' => { 'name' => 'vnet3', 'ipv4_network' => '10.3.0.0' }
         }
       }
 
@@ -186,11 +186,11 @@ describe 'CloudConductor::VnetPartHelper' do
               'networks' => {
                 'vnet1' => {
                   'name' => 'vnet1',
-                  'ipv4_address' => '192.168.10.0'
+                  'ipv4_network' => '192.168.10.0'
                 },
                 'vnet2' => {
                   'name' => 'vnet2',
-                  'ipv4_address' => '192.168.20.0'
+                  'ipv4_network' => '192.168.20.0'
                 }
               }
             }
@@ -205,9 +205,9 @@ describe 'CloudConductor::VnetPartHelper' do
 
       result = {
         'networks' => {
-          'vnet1' => { 'name' => 'vnet1', 'ipv4_address' => '10.1.0.0' },
-          'vnet2' => { 'name' => 'vnet2', 'ipv4_address' => '192.168.20.0' },
-          'vnet3' => { 'name' => 'vnet3', 'ipv4_address' => '10.3.0.0' }
+          'vnet1' => { 'name' => 'vnet1', 'ipv4_network' => '10.1.0.0' },
+          'vnet2' => { 'name' => 'vnet2', 'ipv4_network' => '192.168.20.0' },
+          'vnet3' => { 'name' => 'vnet3', 'ipv4_network' => '10.3.0.0' }
         }
       }
       expect(recipe.network_conf).to eq(result)

@@ -77,7 +77,7 @@ module CloudConductor
 
     def network_address(network_name)
       nwcfg = network_conf['networks'][network_name]
-      nwcfg['ipv4_address'] || node['vnet_part']['config']['network']['virtual']['addr']
+      nwcfg['ipv4_network'] || node['vnet_part']['config']['network']['virtual']['addr']
     end
 
     def network_prefix(network_name)
