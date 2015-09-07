@@ -95,5 +95,19 @@ module CloudConductor
     def platform_pattern_path
       pattern_path(platform_pattern['name'])
     end
+
+    def kvs_get(key)
+      data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+      result = JSON.parse(data) if data && data.length > 0
+      result ||= {}
+
+      hash_keys = key.split('/')
+      hash_keys.each do |k|
+        break unless result.key?(k)
+        result = result[k] if result.key?(k)
+      end
+
+      result || {}
+    end
   end
 end

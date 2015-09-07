@@ -123,5 +123,12 @@ if host_info['roles'].include?('vnmgr')
   configure_interfaces
 
   key = node['vnet_part']['keys']['networks']['base']
-  CloudConductor::ConsulClient::KeyValueStore.put(key, conf)
+  data = {
+    cloudconductor: {
+      networks: {
+        base: node['vnet_part']['networks']
+      }
+    }
+  }
+  CloudConductor::ConsulClient::KeyValueStore.put(key, data)
 end

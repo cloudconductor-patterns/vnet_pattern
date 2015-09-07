@@ -98,7 +98,26 @@ describe 'vnet_part::vnet_configure' do
       .and_return(nwcfg_tomcat)
       .once
 
+    base = {
+      networks: {},
+      servers: {}
+    }.with_indifferent_access
+
+    data = {
+      cloudconductor: {
+        networks: {
+          base: base
+        }
+      }
+    }
+
+    expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
+      .with('cloudconductor/networks/base', data)
+      .and_return(nil).once
+
     chef_run.converge(described_recipe)
+
+    expect(chef_run.node['vnet_part']['networks']).to eql(base)
   end
 
   describe 'create vna definitions' do
@@ -108,9 +127,17 @@ describe 'vnet_part::vnet_configure' do
         .and_return(nil).once
 
       vnacfg = {
-        id: 'vna1',
-        hwaddr: '02:00:01:01:00:01',
-        datapath_id: '0x00020001010001'
+        cloudconductor: {
+          networks: {
+            edge1: {
+              vna: {
+                id: 'vna1',
+                hwaddr: '02:00:01:01:00:01',
+                datapath_id: '0x00020001010001'
+              }
+            }
+          }
+        }
       }.with_indifferent_access
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
@@ -126,15 +153,34 @@ describe 'vnet_part::vnet_configure' do
     end
 
     it 'update' do
+      vna = {
+        cloudconductor: {
+          networks: {
+            edge1: {
+              vna: {
+                bridge: 'br0'
+              }
+            }
+          }
+        }
+      }.with_indifferent_access
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
         .with('cloudconductor/networks/edge1/vna')
-        .and_return('{"bridge":"br0"}').once
+        .and_return(JSON.generate(vna)).once
 
       vnacfg = {
-        bridge: 'br0',
-        id: 'vna1',
-        hwaddr: '02:00:01:01:00:01',
-        datapath_id: '0x00020001010001'
+        cloudconductor: {
+          networks: {
+            edge1: {
+              vna: {
+                bridge: 'br0',
+                id: 'vna1',
+                hwaddr: '02:00:01:01:00:01',
+                datapath_id: '0x00020001010001'
+              }
+            }
+          }
+        }
       }.with_indifferent_access
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
@@ -151,10 +197,18 @@ describe 'vnet_part::vnet_configure' do
 
     it 'none update' do
       vnacfg = {
-        bridge: 'br0',
-        id: 'vna1',
-        hwaddr: '02:00:01:01:00:01',
-        datapath_id: '0x00020001010001'
+        cloudconductor: {
+          networks: {
+            edge1: {
+              vna: {
+                bridge: 'br0',
+                id: 'vna1',
+                hwaddr: '02:00:01:01:00:01',
+                datapath_id: '0x00020001010001'
+              }
+            }
+          }
+        }
       }.with_indifferent_access
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -270,11 +324,18 @@ describe 'vnet_part::vnet_configure' do
         .at_least(:once)
 
       ifcfg = {
-        'type' => 'gretap',
-        'network' => 'vnet1',
-        'virtual_address' => '10.1.0.1',
-        'update' => true
-      }
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap1: {
+                'type' => 'gretap',
+                'network' => 'vnet1',
+                'virtual_address' => '10.1.0.1'
+              }
+            }
+          }
+        }
+      }.with_indifferent_access
 
       expect(CloudConductor::ConsulClient::KeyValueStore)
         .to receive(:put)
@@ -323,15 +384,22 @@ describe 'vnet_part::vnet_configure' do
         .once
 
       ifcfg = {
-        'type' => 'gretap',
-        'network' => 'vnet2',
-        'security_groups' => [
-          'tcp:22:0.0.0.0/0',
-          'icmp:-1:0.0.0.0/0'
-        ],
-        'virtual_address' => '10.20.0.1',
-        'update' => true
-      }
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap2: {
+                'type' => 'gretap',
+                'network' => 'vnet2',
+                'security_groups' => [
+                  'tcp:22:0.0.0.0/0',
+                  'icmp:-1:0.0.0.0/0'
+                ],
+                'virtual_address' => '10.20.0.1'
+              }
+            }
+          }
+        }
+      }.with_indifferent_access
 
       expect(CloudConductor::ConsulClient::KeyValueStore)
         .to receive(:put)

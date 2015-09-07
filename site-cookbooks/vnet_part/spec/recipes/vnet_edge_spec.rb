@@ -43,9 +43,17 @@ describe 'vnet_part::vnet_edge' do
     allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).and_return('')
 
     vna_cfg = {
-      id: 'vna1',
-      hwaddr: '02:99:00:01:00:01',
-      datapath_id: '0x00029900010001'
+      cloudconductor: {
+        networks: {
+          edge1: {
+            vna: {
+              id: 'vna1',
+              hwaddr: '02:99:00:01:00:01',
+              datapath_id: '0x00029900010001'
+            }
+          }
+        }
+      }
     }
 
     allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -59,9 +67,17 @@ describe 'vnet_part::vnet_edge' do
     chef_run.node.set['vnet_part']['node_ref'] = 'edge1'
 
     vna_cfg = {
-      id: 'vna1',
-      hwaddr: '02:99:99:01:00:01',
-      datapath_id: '0x00029999010001'
+      cloudconductor: {
+        networks: {
+          edge1: {
+            vna: {
+              id: 'vna1',
+              hwaddr: '02:99:99:01:00:01',
+              datapath_id: '0x00029999010001'
+            }
+          }
+        }
+      }
     }
 
     expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -99,9 +115,17 @@ describe 'vnet_part::vnet_edge' do
     chef_run.node.set['vnet_part']['node_ref'] = 'edge2'
 
     vna_cfg = {
-      id: 'vna2',
-      hwaddr: '02:99:99:01:00:02',
-      datapath_id: '0x00029999010002'
+      cloudconductor: {
+        networks: {
+          edge2: {
+            vna: {
+              id: 'vna2',
+              hwaddr: '02:99:99:01:00:02',
+              datapath_id: '0x00029999010002'
+            }
+          }
+        }
+      }
     }
 
     expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -157,9 +181,17 @@ describe 'vnet_part::vnet_edge' do
 
     it 'create gretap and add port to bridge' do
       ifcfg = {
-        remote_address: '192.168.0.11',
-        local_address: '192.168.0.1',
-        virtual_address: '10.1.0.1'
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap1: {
+                remote_address: '192.168.0.11',
+                local_address: '192.168.0.1',
+                virtual_address: '10.1.0.1'
+              }
+            }
+          }
+        }
       }.with_indifferent_access
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -173,12 +205,19 @@ describe 'vnet_part::vnet_edge' do
         .once
 
       ifcfg = {
-        remote_address: '192.168.0.11',
-        local_address: '192.168.0.1',
-        virtual_address: '10.1.0.1',
-        type: 'gretap',
-        port_name: 'tap01',
-        update: true
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap1: {
+                remote_address: '192.168.0.11',
+                local_address: '192.168.0.1',
+                virtual_address: '10.1.0.1',
+                type: 'gretap',
+                port_name: 'tap01'
+              }
+            }
+          }
+        }
       }.with_indifferent_access
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:put)
         .with('cloudconductor/networks/node1/tap1', ifcfg)

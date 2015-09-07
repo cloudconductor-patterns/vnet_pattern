@@ -94,22 +94,41 @@ describe 'vnet_part::vnet_node' do
       .with('cloudconductor/networks/node1/')
       .and_return('["cloudconductor/networks/node1/tap1"]')
 
+    ifcfg = {
+      cloudconductor: {
+        networks: {
+          node1: {
+            tap1: {
+              virtual_address: '10.1.0.1'
+            }
+          }
+        }
+      }
+    }.with_indifferent_access
+
     expect(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:get)
       .with('cloudconductor/networks/node1/tap1')
-      .and_return('{"virtual_address": "10.1.0.1"}')
+      .and_return(JSON.generate(ifcfg))
 
     allow_any_instance_of(Mixlib::ShellOut).to receive(:error!).and_return(0)
     allow_any_instance_of(Mixlib::ShellOut).to receive(:stdout).and_return('02:00:0a:01:00:01')
 
     ret_ifcfg = {
-      type: 'gretap',
-      remote_address: '192.168.0.1',
-      local_address: '192.168.0.10',
-      virtual_address: '10.1.0.1',
-      virtual_prefix: 24,
-      hwaddr: '02:00:0a:01:00:01',
-      update: true
+      cloudconductor: {
+        networks: {
+          node1: {
+            tap1: {
+              type: 'gretap',
+              remote_address: '192.168.0.1',
+              local_address: '192.168.0.10',
+              virtual_address: '10.1.0.1',
+              virtual_prefix: 24,
+              hwaddr: '02:00:0a:01:00:01'
+            }
+          }
+        }
+      }
     }.with_indifferent_access
 
     expect(CloudConductor::ConsulClient::KeyValueStore)

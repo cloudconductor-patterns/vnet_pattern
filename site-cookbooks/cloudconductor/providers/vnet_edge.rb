@@ -30,7 +30,17 @@ action :create do
 
   new_info['bridge'] = new_resource.bridge if new_resource.bridge
 
-  info = current_info.merge(new_info)
+  new_info = {
+    'cloudconductor' => {
+      'networks' => {
+        new_resource.hostname => {
+          'vna' => new_info
+        }
+      }
+    }
+  }.with_indifferent_access
+
+  info = ::Chef::Mixin::DeepMerge.deep_merge(current_info, new_info)
 
   unless info == current_info
     CloudConductor::ConsulClient::KeyValueStore.put(key, info)

@@ -59,8 +59,7 @@ module CloudConductor
 
     def networks_base
       key = node['vnet_part']['keys']['networks']['base']
-      data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-      result = ::Chef::Mixin::DeepMerge.deep_merge(result, JSON.parse(data)) if data && data.length > 0
+      result = ::Chef::Mixin::DeepMerge.deep_merge(result, kvs_get(key))
       result || {}
     end
 
@@ -93,9 +92,7 @@ module CloudConductor
 
     def vna_config(hostname)
       key = "cloudconductor/networks/#{hostname}/vna"
-      data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-      result = JSON.parse(data) if data && data.length > 0
-      result || {}
+      kvs_get(key)
     end
 
     def load_current_interfaces(svinfo)
@@ -107,9 +104,7 @@ module CloudConductor
 
       keys.each do |key|
         ifname = key.slice(Regexp.new("#{prefix}(?<if_name>[^/]*)"), 'if_name')
-        data = CloudConductor::ConsulClient::KeyValueStore.get(key)
-
-        current_interfaces[ifname] = JSON.parse(data) if data && data.length > 0
+        current_interfaces[ifname] = kvs_get(key)
       end if keys
 
       current_interfaces

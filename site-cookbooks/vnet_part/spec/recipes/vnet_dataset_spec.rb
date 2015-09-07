@@ -57,9 +57,17 @@ describe 'vnet_part::vnet_dataset' do
     allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:put).and_return('')
 
     vna_cfg = {
-      id: 'vna00',
-      hwaddr: '02:00:00:00:00:01',
-      datapath_id: '0x00020000000001'
+      cloudconductor: {
+        networks: {
+          edge1: {
+            vna: {
+              id: 'vna00',
+              hwaddr: '02:00:00:00:00:01',
+              datapath_id: '0x00020000000001'
+            }
+          }
+        }
+      }
     }
 
     allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -76,9 +84,17 @@ describe 'vnet_part::vnet_dataset' do
   describe 'datapaths' do
     before do
       vna_cfg = {
-        id: 'vna1',
-        hwaddr: '02:99:99:01:00:01',
-        datapath_id: '0x00029999010001'
+        cloudconductor: {
+          networks: {
+            edge1: {
+              vna: {
+                id: 'vna1',
+                hwaddr: '02:99:99:01:00:01',
+                datapath_id: '0x00029999010001'
+              }
+            }
+          }
+        }
       }
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -158,16 +174,24 @@ describe 'vnet_part::vnet_dataset' do
         .at_least(:once)
 
       if_cfg_01 = {
-        type: 'gretap',
-        network: 'vnet1',
-        security_groups: [
-          'sg-web',
-          'sg-shared'
-        ],
-        virtual_address: '10.1.0.11',
-        uuid: nil,
-        port_name: 'n1tap1',
-        hwaddr: '02:01:99:01:01:01'
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap1: {
+                type: 'gretap',
+                network: 'vnet1',
+                security_groups: [
+                  'sg-web',
+                  'sg-shared'
+                ],
+                virtual_address: '10.1.0.11',
+                uuid: nil,
+                port_name: 'n1tap1',
+                hwaddr: '02:01:99:01:01:01'
+              }
+            }
+          }
+        }
       }
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -182,13 +206,21 @@ describe 'vnet_part::vnet_dataset' do
         .at_least(:once)
 
       if_cfg_01 = {
-        type: 'gretap',
-        network: 'vnet1',
-        security_groups: nil,
-        virtual_address: '10.1.0.12',
-        uuid: nil,
-        port_name: 'n2tap1',
-        hwaddr: '02:02:99:01:01:02'
+        cloudconductor: {
+          networks: {
+            node2: {
+              tap1: {
+                type: 'gretap',
+                network: 'vnet1',
+                security_groups: nil,
+                virtual_address: '10.1.0.12',
+                uuid: nil,
+                port_name: 'n2tap1',
+                hwaddr: '02:02:99:01:01:02'
+              }
+            }
+          }
+        }
       }
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
@@ -203,16 +235,24 @@ describe 'vnet_part::vnet_dataset' do
         .at_least(:once)
 
       if_cfg_01 = {
-        type: 'gretap',
-        network: 'vnet1',
-        security_groups: [
-          'sg-db',
-          'sg-shared'
-        ],
-        virtual_address: '10.1.0.13',
-        uuid: 'if-db1tap1',
-        port_name: 'n3tap1',
-        hwaddr: '02:01:99:03:01:03'
+        cloudconductor: {
+          networks: {
+            node3: {
+              tap1: {
+                type: 'gretap',
+                network: 'vnet1',
+                security_groups: [
+                  'sg-db',
+                  'sg-shared'
+                ],
+                virtual_address: '10.1.0.13',
+                uuid: 'if-db1tap1',
+                port_name: 'n3tap1',
+                hwaddr: '02:01:99:03:01:03'
+              }
+            }
+          }
+        }
       }
 
       expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)

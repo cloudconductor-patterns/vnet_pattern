@@ -82,9 +82,15 @@ describe 'CloudConductor::VnetPartHelper' do
   describe 'networks_base' do
     it do
       data = {
-        networks: {
-          vnet1: {
-            name: 'vnet1'
+        cloudconductor: {
+          networks: {
+            base: {
+              networks: {
+                vnet1: {
+                  name: 'vnet1'
+                }
+              }
+            }
           }
         }
       }
@@ -116,10 +122,24 @@ describe 'CloudConductor::VnetPartHelper' do
     it do
       recipe.run_context.node.set['vnet_part']['networks'] = nil
 
+      base = {
+        cloudconductor: {
+          networks: {
+            base: {
+              networks: {
+                vnet1: {
+                  name: 'vnet1'
+                }
+              }
+            }
+          }
+        }
+      }
+
       allow(CloudConductor::ConsulClient::KeyValueStore)
         .to receive(:get)
         .with('cloudconductor/networks/base')
-        .and_return('{"networks": {"vnet1":{"name":"vnet1"}}}')
+        .and_return(JSON.generate(base))
 
       result = { 'networks' => { 'vnet1' => { 'name' => 'vnet1' } } }
       expect(recipe.network_conf).to eq(result)
@@ -160,14 +180,20 @@ describe 'CloudConductor::VnetPartHelper' do
       }
 
       network_conf = {
-        'networks' => {
-          'vnet1' => {
-            'name' => 'vnet1',
-            'ipv4_address' => '192.168.10.0'
-          },
-          'vnet2' => {
-            'name' => 'vnet2',
-            'ipv4_address' => '192.168.20.0'
+        cloudconductor: {
+          networks: {
+            base: {
+              'networks' => {
+                'vnet1' => {
+                  'name' => 'vnet1',
+                  'ipv4_address' => '192.168.10.0'
+                },
+                'vnet2' => {
+                  'name' => 'vnet2',
+                  'ipv4_address' => '192.168.20.0'
+                }
+              }
+            }
           }
         }
       }
@@ -238,8 +264,12 @@ describe 'CloudConductor::VnetPartHelper' do
         .and_return(nil)
 
       sv_info = { 'hostname' => 'node1', 'roles' => %w(web ap) }
+
+      result = {
+        'tap1' => {}
+      }
       expect(recipe.gretap_interfaces(sv_info))
-        .to eq({})
+        .to eq(result)
     end
 
     it do
@@ -279,15 +309,39 @@ describe 'CloudConductor::VnetPartHelper' do
         .with('cloudconductor/networks/node1/')
         .and_return('["cloudconductor/networks/node1/tap1","cloudconductor/networks/node1/tap2"]')
 
+      tap1 = {
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap1: {
+                virtual_address: '10.1.0.1'
+              }
+            }
+          }
+        }
+      }
+
       allow(CloudConductor::ConsulClient::KeyValueStore)
         .to receive('get')
         .with('cloudconductor/networks/node1/tap1')
-        .and_return('{"virtual_address":"10.1.0.1"}')
+        .and_return(JSON.generate(tap1))
+
+      tap2 = {
+        cloudconductor: {
+          networks: {
+            node1: {
+              tap2: {
+                virtual_address: '10.1.0.2'
+              }
+            }
+          }
+        }
+      }
 
       allow(CloudConductor::ConsulClient::KeyValueStore)
         .to receive('get')
         .with('cloudconductor/networks/node1/tap2')
-        .and_return('{"virtual_address":"10.1.0.2"}')
+        .and_return(JSON.generate(tap2))
 
       sv_info = { 'hostname' => 'node1', 'roles' => %w(web ap) }
       result = {

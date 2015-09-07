@@ -9,6 +9,8 @@
 
 require_relative '../spec_helper'
 require_relative '../../libraries/default'
+require_relative '../../libraries/consul_helper'
+require_relative '../../libraries/consul_helper_kv'
 
 describe 'CloudConductor::CommonHelper' do
   def cookbook_root
@@ -254,6 +256,37 @@ describe 'CloudConductor::CommonHelper' do
 
     it 'patterns_dir' do
       expect(recipe.patterns_dir).to eq('/etc/patterns')
+    end
+  end
+
+  describe 'kvs_get' do
+    it do
+      key = 'cloudconductor/networks/base'
+      data = {
+        cloudconductor: {
+          networks: {
+            base: {
+              networks: {
+                vnet1: {
+                  name: 'vnet1'
+                }
+              }
+            }
+          }
+        }
+      }
+      expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:get)
+        .with('cloudconductor/networks/base')
+        .and_return(JSON.generate(data))
+
+      result = {
+        'networks' => {
+          'vnet1' => {
+            'name' => 'vnet1'
+          }
+        }
+      }
+      expect(recipe.kvs_get(key)).to eq(result)
     end
   end
 end

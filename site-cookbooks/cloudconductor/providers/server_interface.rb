@@ -35,11 +35,19 @@ action :create do
   new_info['hwaddr'] = hwaddr(new_resource.if_name) unless new_resource.hwaddr if new_resource.remote_address
   new_info['port_name'] = new_resource.port_name if new_resource.port_name
 
-  info = current_info.merge(new_info)
+  new_info = {
+    'cloudconductor' => {
+      'networks' => {
+        new_resource.hostname => {
+          new_resource.if_name => new_info
+        }
+      }
+    }
+  }.with_indifferent_access
+
+  info = ::Chef::Mixin::DeepMerge.deep_merge(current_info, new_info)
 
   unless info == current_info
-    info['update'] = true
-
     CloudConductor::ConsulClient::KeyValueStore.put(key, info)
     new_resource.updated_by_last_action(true)
   end
