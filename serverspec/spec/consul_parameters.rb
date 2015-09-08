@@ -31,7 +31,7 @@ module ConsulParameters
         next if key == 'cloudconductor/servers'
         hostname = key.slice(%r{cloudconductor/servers/(?<hostname>[^/]*)}, 'hostname')
         server_info_json = Base64.decode64(response_hash[:Value])
-        servers[hostname] = JSON.parse(server_info_json, symbolize_names: true)
+        servers[hostname] = JSON.parse(server_info_json, symbolize_names: true)[:cloudconductor][:servers][hostname.to_sym]
       end
     rescue
       servers = {}
@@ -56,18 +56,19 @@ module ConsulParameters
   def read_networks
     networks = {}
     begin
-      kvs_keys('cloudconductor/networks/').each do |key|
-        next if key == 'cloudconductor/networks'
+      prefix = 'cloudconductor/networks'
+      kvs_keys(prefix).each do |key|
+        next if key == prefix
         hostname = key.slice(%r{#{prefix}/(?<hostname>[^/]*)}, 'hostname')
         if hostname == 'base'
           data = kvs_get(key)
-          networks['base'] = data
+          networks['base'] = data[:cloudconductor][:networks][hostname.to_sym]
           next
         end
         ifname = key.slice(%r{#{prefix}/#{hostname}/(?<ifname>[^/]*)}, 'ifname')
         data = kvs_get(key)
         networks[hostname] ||= {}
-        networks[hostname][ifname] = data
+        networks[hostname][ifname] = data[:cloudconductor][:networks][hostname.to_sym][ifname.to_sym]
       end
     rescue => exception
       p exception.message
