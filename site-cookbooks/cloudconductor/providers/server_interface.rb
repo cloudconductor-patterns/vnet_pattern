@@ -45,12 +45,16 @@ action :create do
     }
   }.with_indifferent_access
 
-  info = ::Chef::Mixin::DeepMerge.deep_merge(new_info, current_info)
+  info = ::Chef::Mixin::DeepMerge.deep_merge(new_info, clone(current_info))
 
   unless info == current_info
     CloudConductor::ConsulClient::KeyValueStore.put(key, info)
     new_resource.updated_by_last_action(true)
   end
+end
+
+def clone(h)
+  JSON.parse(JSON.generate(h)).with_indifferent_access
 end
 
 def hwaddr(dev_name)
