@@ -46,8 +46,14 @@ action :create do
   Chef::Log.debug "create_interface: #{ret}"
 
   if ret['error']
-    Chef::Log.error "create_interface: #{params}"
-    Chef::Log.error "create_interface: #{ret}"
+    Chef::Log.warn "create_interface: #{params}"
+    Chef::Log.warn "create_interface: #{ret}"
+
+    ret = VNetAPIClient::Interface.show(params[:uuid])
+    Chef::Log.warn "create_interface: show: #{ret}"
+
+    ret = VNetAPIClient::MacLease.update(ret['mac_leases'].first['uuid'], mac_address: new_resource.mac_addr)
+    Chef::Log.warn "create_interface: mac_leases: update: #{ret}"
   else
     new_resource.updated_by_last_action(true)
   end

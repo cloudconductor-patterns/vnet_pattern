@@ -40,7 +40,7 @@ action :create do
     }
   }.with_indifferent_access
 
-  info = ::Chef::Mixin::DeepMerge.deep_merge(current_info, new_info)
+  info = ::Chef::Mixin::DeepMerge.deep_merge(new_info, current_info)
 
   unless info == current_info
     CloudConductor::ConsulClient::KeyValueStore.put(key, info)

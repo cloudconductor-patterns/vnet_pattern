@@ -185,7 +185,6 @@ describe 'CloudConductor::CommonHelper' do
 
       allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys)
         .with('cloudconductor/patterns/', '/').and_return('[]')
-
     end
 
     describe 'platform_pattern' do
