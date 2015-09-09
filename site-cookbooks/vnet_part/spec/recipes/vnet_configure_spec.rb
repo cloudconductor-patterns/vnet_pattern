@@ -61,7 +61,7 @@ describe 'vnet_part::vnet_configure' do
       servers: {}
     }
     allow(YAML).to receive(:load_file)
-      .with("#{patterns_dir}/vnet_pattern/network.yml")
+      .with("#{patterns_dir}/vnet_pattern/config/network.yml")
       .and_return(nwcfg_default)
 
     nwcfg_tomcat = {
@@ -69,7 +69,7 @@ describe 'vnet_part::vnet_configure' do
       servers: {}
     }
     allow(YAML).to receive(:load_file)
-      .with("#{patterns_dir}/tomcat_pattern/network.yml")
+      .with("#{patterns_dir}/tomcat_pattern/config/network.yml")
       .and_return(nwcfg_tomcat)
 
     allow(File).to receive(:exist?).and_return(true)
@@ -85,7 +85,7 @@ describe 'vnet_part::vnet_configure' do
       servers: {}
     }
     expect(YAML).to receive(:load_file)
-      .with("#{patterns_dir}/vnet_pattern/network.yml")
+      .with("#{patterns_dir}/vnet_pattern/config/network.yml")
       .and_return(nwcfg_default)
       .once
 
@@ -94,7 +94,7 @@ describe 'vnet_part::vnet_configure' do
       servers: {}
     }
     expect(YAML).to receive(:load_file)
-      .with("#{patterns_dir}/tomcat_pattern/network.yml")
+      .with("#{patterns_dir}/tomcat_pattern/config/network.yml")
       .and_return(nwcfg_tomcat)
       .once
 
@@ -314,7 +314,7 @@ describe 'vnet_part::vnet_configure' do
         }
       }.with_indifferent_access
       expect(YAML).to receive(:load_file)
-        .with("#{patterns_dir}/vnet_pattern/network.yml")
+        .with("#{patterns_dir}/vnet_pattern/config/network.yml")
         .and_return(nwcfg_default)
         .once
 
@@ -379,7 +379,7 @@ describe 'vnet_part::vnet_configure' do
       }
 
       expect(YAML).to receive(:load_file)
-        .with("#{patterns_dir}/tomcat_pattern/network.yml")
+        .with("#{patterns_dir}/tomcat_pattern/config/network.yml")
         .and_return(nwcfg_tomcat)
         .once
 
