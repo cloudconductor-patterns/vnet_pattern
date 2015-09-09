@@ -8,4 +8,6 @@
 #
 
 default['openvswitch']['install_method'] = 'source'
-default['openvswitch']['version'] = '2.4.0'
+default['openvswitch']['version'] = '2.3.1'
+
+default['openvswitch']['user'] = 'ovswitch'

@@ -10,46 +10,39 @@
 version = node['openvswitch']['version']
 ovs_name = "openvswitch-#{version}"
 
-packages = %w(gcc make automake rpm-build redhat-rpm-config python-devel openssl-devel kernel-devel kernel-debug-devel)
+packages = %w(gcc make automake rpm-build redhat-rpm-config python-devel openssl-devel kernel-devel kernel-debug-devel kernel-abi-whitelists wget)
 
 packages.each do |pkgname|
   package pkgname
 end
 
-directory '/root/rpmbuild/SOURCES' do
-  recursive true
+build_user = node['openvswitch']['build_user']
+
+user build_user do
   action :create
 end
 
-remote_file "/root/rpmbuild/SOURCES/#{ovs_name}.tar.gz" do
-  source "http://openvswitch.org/releases/#{ovs_name}.tar.gz"
+directory "/home/#{build_user}/rpmbuild/SOURCES/" do
+  action :create
+  owner build_user
+  mode '0755'
 end
 
-bash 'unpack' do
-  cwd '/root/rpmbuild/SOURCES'
-  code <<-EOF
-  if [ -d #{ovs_name} ]; then
-    rm -r -f #{ovs_name}
-  fi
-  tar xfz #{ovs_name}.tar.gz
-EOF
-end
-
-cookbook_file "/root/rpmbuild/SOURCES/#{ovs_name}.patch" do
+cookbook_file "/home/#{build_user}/rpmbuild/SOURCES/#{ovs_name}.patch" do
   source "#{version}.patch"
+  owner build_user
 end
 
-cookbook_file "/root/rpmbuild/SOURCES/#{ovs_name}-kmod-spec.patch" do
-  source "#{version}-kmod-spec.patch"
+cookbook_file "/home/#{build_user}/build.sh" do
+  source 'build.sh'
+  owner build_user
+  mode '0755'
 end
 
 bash 'build' do
-  cwd "/root/rpmbuild/SOURCES/#{ovs_name}"
+  cwd "/home/#{build_user}"
   code <<-EOF
-  rpmbuild -bb --without check rhel/openvswitch.spec
-  cp rhel/openvswitch-kmod.files ../
-  patch -p1 < ../#{ovs_name}-kmod-spec.patch
-  rpmbuild -bb rhel/openvswitch-kmod-rhel6.spec
+  cat ./build.sh | su - #{build_user} -c "bash -s -- -v #{VERSION}"
 EOF
 end
 
