@@ -54,10 +54,11 @@ end
 
 bash 'install' do
   code <<-EOF
-  status=$(yum list installed | grep openvswitch )
+  output=$(yum list installed | grep openvswitch )
+  status=$?
   if [ $status -ne 0 ]; then
-    yum install -y /root/rpmbuild/RPMS/**/kmod-#{ovs_name}-1*.rpm
-    yum install -y /root/rpmbuild/RPMS/**/#{ovs_name}-1*.rpm
+    yum install -y /home/#{build_user}/rpmbuild/RPMS/**/kmod-#{ovs_name}-1*.rpm
+    yum install -y /home/#{build_user}/rpmbuild/RPMS/**/#{ovs_name}-1*.rpm
   fi
 EOF
 end
