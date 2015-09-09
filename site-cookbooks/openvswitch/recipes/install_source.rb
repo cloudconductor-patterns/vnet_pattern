@@ -22,6 +22,12 @@ user build_user do
   action :create
 end
 
+directory "/home/#{build_user}/rpmbuild/" do
+  action :create
+  owner build_user
+  mode '0755'
+end
+
 directory "/home/#{build_user}/rpmbuild/SOURCES/" do
   action :create
   owner build_user
@@ -42,14 +48,17 @@ end
 bash 'build' do
   cwd "/home/#{build_user}"
   code <<-EOF
-  cat ./build.sh | su - #{build_user} -c "bash -s -- -v #{VERSION}"
+  cat ./build.sh | su - #{build_user} -c "bash -s -- -v #{version}"
 EOF
 end
 
 bash 'install' do
   code <<-EOF
-  yum install -y /root/rpmbuild/RPMS/**/kmod-#{ovs_name}-1*.rpm
-  yum install -y /root/rpmbuild/RPMS/**/#{ovs_name}-1*.rpm
+  status=$(yum list installed | grep openvswitch )
+  if [ $status -ne 0 ]; then
+    yum install -y /root/rpmbuild/RPMS/**/kmod-#{ovs_name}-1*.rpm
+    yum install -y /root/rpmbuild/RPMS/**/#{ovs_name}-1*.rpm
+  fi
 EOF
 end
 

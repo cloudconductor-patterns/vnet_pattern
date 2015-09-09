@@ -10,4 +10,4 @@
 default['openvswitch']['install_method'] = 'source'
 default['openvswitch']['version'] = '2.3.1'
 
-default['openvswitch']['user'] = 'ovswitch'
+default['openvswitch']['build_user'] = 'ovswitch'
