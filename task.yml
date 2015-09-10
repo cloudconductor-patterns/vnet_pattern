@@ -133,6 +133,8 @@ tasks:
             initctl status vnet-vna | grep running
             if [ $? -ne 0 ]; then
               initctl start vnet-vna
+            else
+              initctl restart vnet-vna
             fi
 
   serverspec:

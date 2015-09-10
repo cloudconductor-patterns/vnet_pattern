@@ -16,10 +16,30 @@ describe 'openvswitch::default' do
     chef_run.converge(described_recipe)
   end
 
+  describe 'install from package' do
+    before do
+      chef_run.node.set['openvswitch']['install_method'] = 'package'
+      chef_run.converge(described_recipe)
+    end
+
+    it do
+      expect(chef_run).to include_recipe('openvswitch::install_package')
+    end
+  end
+
+  describe 'install from source' do
+    before do
+      chef_run.node.set['openvswitch']['install_method'] = 'source'
+      chef_run.converge(described_recipe)
+    end
+
+    it do
+      expect(chef_run).to include_recipe('openvswitch::install_source')
+    end
+  end
+
   it 'create OVSBridge' do
     expect(chef_run).to create_openvswitch('br0')
-
-    expect(chef_run).to include_recipe('openvswitch::install_package')
 
     expect(chef_run).to create_template('/etc/sysconfig/network-scripts/ifcfg-br0')
 

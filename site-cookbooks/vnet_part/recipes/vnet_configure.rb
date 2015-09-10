@@ -26,13 +26,13 @@ end
 #   vnet_pattern < platform < optional
 #
 def load_network_yml
-  new_cfg = YAML.load_file(File.join(pattern_path('vnet_pattern'), 'network.yml'))
+  new_cfg = YAML.load_file(File.join(pattern_path('vnet_pattern'), 'config', 'network.yml'))
 
-  yml_file = File.join(platform_pattern_path, 'network.yml')
+  yml_file = File.join(platform_pattern_path, 'config', 'network.yml')
   new_cfg = ::Chef::Mixin::DeepMerge.deep_merge(YAML.load_file(yml_file), new_cfg) if File.exist?(yml_file)
 
   optional_pattern_names.each do |name|
-    yml_file = File.join(pattern_path(name), 'network.yml')
+    yml_file = File.join(pattern_path(name), 'config', 'network.yml')
     new_cfg = ::Chef::Mixin::DeepMerge.deep_merge(YAML.load_file(yml_file), new_cfg) if File.exist?(yml_file)
   end
 
