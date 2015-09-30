@@ -1,0 +1,6 @@
+{
+  "service": {
+    "name": "vnet-webapi",
+    "port": 9101
+  }
+}

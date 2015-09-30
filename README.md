@@ -5,7 +5,6 @@ This is the optional pattern designed to attach backup functions which amanda pr
 Currently supported:
 
 * CentOS (6.5)
-* amanda (>= 3.6.6)
 
 For more information, please visit [official web site](http://cloudconductor.org/).
 
@@ -15,7 +14,7 @@ Requirements
 Prerequisites
 -------------
 
-- cloudconductor (>= 1.0)
+- cloudconductor (>= 1.1)
 
 How to use patterns
 ============

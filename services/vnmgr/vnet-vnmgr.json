@@ -1,0 +1,6 @@
+{
+  "service": {
+    "name": "vnet-vnmgr",
+    "port": 9102
+  }
+}

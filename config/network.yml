@@ -1,0 +1,29 @@
+
+# networks
+networks:
+  vnet1:
+    ipv4_network: 10.11.0.0
+    ipv4_prefix: 24
+    mode: virtual
+
+
+# servers
+servers:
+  node-default:
+    role: default
+    interfaces:
+      tap1:
+        type: gretap
+        network: vnet1
+        security_groups:
+          - sg-shared
+  edge-server:
+    role: vna
+
+
+# security_groups:
+security_groups:
+  sg-shared:
+    rules:
+      - tcp:22:0.0.0.0/0
+      - icmp:-1:0.0.0.0/0
