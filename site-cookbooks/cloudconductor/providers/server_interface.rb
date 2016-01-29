@@ -32,7 +32,7 @@ action :create do
   new_info['virtual_prefix'] = new_resource.virtual_prefix if new_resource.virtual_prefix
   new_info['uuid'] = new_resource.uuid if new_resource.uuid
   new_info['hwaddr'] = new_resource.hwaddr if new_resource.hwaddr
-  new_info['hwaddr'] = hwaddr(new_resource.if_name) unless new_resource.hwaddr if new_resource.remote_address
+  new_info['hwaddr'] = hwaddr(new_resource.if_name) if new_resource.remote_address && !new_resource.hwaddr
   new_info['port_name'] = new_resource.port_name if new_resource.port_name
 
   new_info = {

@@ -20,6 +20,3 @@ Documentation:
 
 Style/RegexpLiteral:
   Enabled: false
-
-Style/SingleSpaceBeforeFirstArg:
-  Enabled: false

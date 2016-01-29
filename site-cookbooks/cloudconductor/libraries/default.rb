@@ -27,11 +27,10 @@ module CloudConductor
 
     def all_servers
       if node['cloudconductor'] && node['cloudconductor']['servers']
-        result = node['cloudconductor']['servers'].to_hash
+        node['cloudconductor']['servers'].to_hash
       else
-        result = {}
+        {}
       end
-      result
     end
 
     def servers(role)
@@ -88,11 +87,10 @@ module CloudConductor
       load_patterns_info unless node['cloudconductor'] && node['cloudconductor']['patterns']
 
       if node['cloudconductor'] && node['cloudconductor']['patterns']
-        result = node['cloudconductor']['patterns'].to_hash
+        node['cloudconductor']['patterns'].to_hash
       else
-        result = {}
+        {}
       end
-      result
     end
 
     def patterns(type)
