@@ -44,15 +44,8 @@ module CloudConductor
         params = {} if params.nil?
         params[:token] = ConsulClient.token if ConsulClient.acl_token?
 
-        unless params.empty?
-          if url.include?('?')
-            url << '&' + params.map { |key, value| "#{key}=#{value}" }.join('&')
-          else
-            url << '?' + params.map { |key, value| "#{key}=#{value}" }.join('&')
-          end
-        end
-
-        url
+        url << url.include?('?') ? '&' : '?'
+        url << params.map { |key, value| "#{key}=#{value}" }.join('&')
       end
     end
     #

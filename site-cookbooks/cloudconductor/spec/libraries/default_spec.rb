@@ -64,22 +64,28 @@ describe 'CloudConductor::CommonHelper' do
     end
 
     it do
-      expect(recipe.server_info('db')).to eql([
-        { 'private_ip' => '192.168.0.1', 'roles' => 'db', 'hostname' => 'sv01' }
-      ])
+      expect(recipe.server_info('db')).to eql(
+        [
+          { 'private_ip' => '192.168.0.1', 'roles' => 'db', 'hostname' => 'sv01' }
+        ]
+      )
     end
 
     it do
-      expect(recipe.server_info('web')).to eql([
-        { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' }
-      ])
+      expect(recipe.server_info('web')).to eql(
+        [
+          { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' }
+        ]
+      )
     end
 
     it do
-      expect(recipe.server_info('ap')).to eql([
-        { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' },
-        { 'private_ip' => '192.168.0.3', 'roles' => 'ap', 'hostname' => 'sv03' }
-      ])
+      expect(recipe.server_info('ap')).to eql(
+        [
+          { 'private_ip' => '192.168.0.2', 'roles' => 'web,ap', 'hostname' => 'sv02' },
+          { 'private_ip' => '192.168.0.3', 'roles' => 'ap', 'hostname' => 'sv03' }
+        ]
+      )
     end
   end
 
@@ -206,10 +212,12 @@ describe 'CloudConductor::CommonHelper' do
       end
 
       it do
-        expect(recipe.optional_patterns).to eq([
-          { 'type' => 'optional', 'name' => 'amanda_pattern' },
-          { 'type' => 'optional', 'name' => 'vnet_pattern' }
-        ])
+        expect(recipe.optional_patterns).to eq(
+          [
+            { 'type' => 'optional', 'name' => 'amanda_pattern' },
+            { 'type' => 'optional', 'name' => 'vnet_pattern' }
+          ]
+        )
       end
     end
 
@@ -273,7 +281,11 @@ describe 'CloudConductor::CommonHelper' do
       it do
         expect(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys)
           .with('cloudconductor/patterns/', '/')
-          .and_return('["cloudconductor/patterns/tomcat_pattern/", "cloudconductor/patterns/amanda_pattern/", "cloudconductor/patterns/vnet_pattern/"]')
+          .and_return(
+            '["cloudconductor/patterns/tomcat_pattern/", \
+              "cloudconductor/patterns/amanda_pattern/", \
+              "cloudconductor/patterns/vnet_pattern/"]'
+          )
 
         tomcat_pattern = {
           type: 'platform'

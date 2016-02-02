@@ -10,7 +10,19 @@
 version = node['openvswitch']['version']
 ovs_name = "openvswitch-#{version}"
 
-packages = %w(gcc make automake rpm-build redhat-rpm-config python-devel openssl-devel kernel-devel kernel-debug-devel kernel-abi-whitelists wget)
+packages = [
+  'gcc',
+  'make',
+  'automake',
+  'rpm-build',
+  'redhat-rpm-config',
+  'python-devel',
+  'openssl-devel',
+  'kernel-devel',
+  'kernel-debug-devel',
+  'kernel-abi-whitelists',
+  'wget'
+]
 
 packages.each do |pkgname|
   package pkgname
