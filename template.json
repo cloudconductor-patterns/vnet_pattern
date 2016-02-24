@@ -80,7 +80,7 @@
           "# Helper function\n",
           "function error_exit\n",
           "{\n",
-          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "VNetEdgeWaitHandle" }, "'\n",
+          "  cfn-signal -e 1 -r \"$1\" '", { "Ref" : "VNetEdgeWaitHandle" }, "'\n",
           "  exit 1\n",
           "}\n",
           "# Set Parameters\n",
@@ -96,12 +96,12 @@
           "for i in `seq 10`; do\n",
           "  if [ ! -z \"`/usr/local/bin/consul members | grep ${host_name}`\" ]; then\n",
           "    # Send success signal\n",
-          "    /opt/aws/bin/cfn-signal -e 0 -r 'VNetEdgeServer Setup complete' '", { "Ref" : "VNetEdgeWaitHandle" }, "'\n",
+          "    cfn-signal -e 0 -r 'VNetEdgeServer Setup complete' '", { "Ref" : "VNetEdgeWaitHandle" }, "'\n",
           "    exit 0\n",
           "  fi\n",
           "  sleep 1\n",
           "done\n",
-          "/opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "VNetEdgeWaitHandle" }, "'\n",
+          "cfn-signal -e 1 -r \"$1\" '", { "Ref" : "VNetEdgeWaitHandle" }, "'\n",
           "exit 1\n"
         ]]}},
         "Tags" : [{"Key": "Name", "Value": "VNetEdgeServer"}, {"Key": "Role", "Value": "vnmgr,vna"}]
